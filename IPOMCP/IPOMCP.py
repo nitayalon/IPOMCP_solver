@@ -51,8 +51,9 @@ class IPOMCP:
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         for i in range(self.n_iterations):
             persona = root_samples[i]
-            interactive_state = InteractiveState(None, persona, None) # TODO(Nitay) - update nested belief_distribution
-            self.environment_simulator.reset_persona(interactive_state.persona, current_history_length)
+            self.environment_simulator.reset_persona(persona, current_history_length)
+            nested_belief = self.environment_simulator.opponent_model.belief_distribution.get_belief()
+            interactive_state = InteractiveState(None, persona, nested_belief)
             self.history_node.particles.append(interactive_state)
             self.simulate(i, interactive_state, self.history_node, self.depth, self.seed, True)
         return self.history_node.children, \
