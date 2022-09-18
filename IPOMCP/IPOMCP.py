@@ -51,7 +51,7 @@ class IPOMCP:
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         for i in range(self.n_iterations):
             persona = root_samples[i]
-            interactive_state = InteractiveState(None, persona, None)
+            interactive_state = InteractiveState(None, persona, None) # TODO(Nitay) - update nested belief
             self.environment_simulator.reset_persona(interactive_state.persona, current_history_length)
             self.history_node.particles.append(interactive_state)
             self.simulate(i, interactive_state, self.history_node, self.depth, self.seed, True)
