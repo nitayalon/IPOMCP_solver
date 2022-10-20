@@ -53,7 +53,6 @@ class IPOMCP:
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         iteration_times = []
         for i in range(self.n_iterations):
-            # TODO(Nitay): compute average and maximal iteration time
             persona = root_samples[i]
             self.environment_simulator.reset_persona(persona, current_history_length)
             nested_belief = self.environment_simulator.opponent_model.belief_distribution.get_belief()
