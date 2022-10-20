@@ -1,6 +1,9 @@
+import pandas as pd
+from utils.logger import *
 from enviroment.nodes import *
 from enviroment.abstract_classes import *
 from ipomcp_config import get_config
+import time
 
 
 class IPOMCP:
@@ -48,6 +51,7 @@ class IPOMCP:
         self.history_node = offer_node.add_history_node(Action(counter_offer), self.action_exploration_policy)
         self.root_sampling.update_distribution(Action(offer), Action(counter_offer), first_move)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
+        iteration_times = []
         for i in range(self.n_iterations):
             # TODO(Nitay): compute average and maximal iteration time
             persona = root_samples[i]
@@ -55,7 +59,14 @@ class IPOMCP:
             nested_belief = self.environment_simulator.opponent_model.belief_distribution.get_belief()
             interactive_state = InteractiveState(None, persona, nested_belief)
             self.history_node.particles.append(interactive_state)
+            start_time = time.time()
             self.simulate(i, interactive_state, self.history_node, self.depth, self.seed, True)
+            end_time = time.time()
+            iteration_time = end_time - start_time
+            iteration_times.append([persona, iteration_time])
+        iteration_time_for_logging = pd.DataFrame(iteration_times)
+        iteration_time_for_logging.columns = ["persona", "time"]
+        get_logger().info(iteration_time_for_logging.groupby("persona").describe().to_string())
         return self.history_node.children, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
 
