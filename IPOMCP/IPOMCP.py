@@ -1,6 +1,5 @@
 from enviroment.nodes import *
 from enviroment.abstract_classes import *
-import matplotlib.pyplot as plt
 from ipomcp_config import get_config
 
 
@@ -50,6 +49,7 @@ class IPOMCP:
         self.root_sampling.update_distribution(Action(offer), Action(counter_offer), first_move)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         for i in range(self.n_iterations):
+            # TODO(Nitay): compute average and maximal iteration time
             persona = root_samples[i]
             self.environment_simulator.reset_persona(persona, current_history_length)
             nested_belief = self.environment_simulator.opponent_model.belief_distribution.get_belief()
@@ -106,62 +106,6 @@ class IPOMCP:
         action_node.increment_visited()
         action_node.update_q_value(total)
         return total, observation.is_terminal
-
-    def rollout(self, interactive_state: InteractiveState, history_node: HistoryNode, depth):
-        if depth <= 0:
-            return 0.0
-        history_node.compute_deterministic_actions_reward(self.reward_function)
-        action_node = history_node.rollout_policy(interactive_state, history_node.parent.action,
-                                                  history_node.observation, int(depth))
-        history_node.children[str(action_node.action)] = action_node
-        action_node.append_particle(interactive_state)
-
-        if action_node.action.is_terminal:
-            return self._halting_action_reward(action_node.action, history_node.observation)
-
-        new_interactive_state, observation, q_value, reward, log_prob = \
-            self.environment_simulator.act(interactive_state,
-                                           history_node.previous_observation,
-                                           action_node.action,
-                                           history_node.observation)
-
-        new_history_node = action_node.add_history_node(observation, self.action_exploration_policy,
-                                                        observation.is_terminal)
-        if observation.is_terminal:
-            history_node.increment_visited()
-            action_node.increment_visited()
-            action_node.update_q_value(reward)
-            return reward, observation.is_terminal
-
-        future_reward = self.rollout(new_interactive_state, new_history_node, depth - 1)
-        total = reward + future_reward
-        return total
-
-    def prune_tree(self, action_node: ActionNode, observation):  # TODO should we add dispose?
-        nearest_observation = action_node.children.get(observation) or action_node.children[
-            min(action_node.children.keys(), key=lambda k: abs(k - observation))]
-        if abs(nearest_observation - observation) < self.pruning_epsilon:
-            return action_node.children[nearest_observation]
-        return None
-
-    def q_values_hist(self):
-        x = np.array([k for k, c in self.history_node.children.items()])
-        y = np.array([c.q_value for k, c in self.history_node.children.items()])
-        plt.hist(y)
-        plt.show()
-
-    def _add_nodes(self, tree_node, node: TreeNode):
-        if not node:
-            return
-
-        for k, c in node.children.items():
-            new_tree_node = tree_node.add_child(name=str(c))
-            self._add_nodes(new_tree_node, c)
-
-    def plot_q_values(self, iteration_number):
-        plt.scatter(np.array(self.history_node.children_values).astype(float)[2:], self.history_node.children_qvalues[2:])
-        plt.title(f'Iteration number {iteration_number}')
-        plt.savefig(f'{iteration_number}.png', bbox_inches='tight')
 
     def _halting_action_reward(self, action, observation):
         reward = 0.0
