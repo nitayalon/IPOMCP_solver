@@ -99,6 +99,7 @@ class IPOMCP:
         new_history_node.particles.append(interactive_state)
         if observation.is_terminal:
             history_node.increment_visited()
+            new_history_node.increment_visited()
             action_node.increment_visited()
             action_node.update_q_value(reward)
             return reward, observation.is_terminal
@@ -111,7 +112,6 @@ class IPOMCP:
             future_reward, is_terminal = self.simulate(trail_number, new_interactive_state, new_history_node, depth - 1,
                                                        seed, True)
             total = reward + future_reward
-        # TODO(Nitay) - warp up the method
         history_node.increment_visited()
         action_node.increment_visited()
         action_node.update_q_value(total)
