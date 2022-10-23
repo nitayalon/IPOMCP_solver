@@ -73,7 +73,7 @@ class IPOMCP:
                  history_node: HistoryNode, depth,
                  seed: int, tree: bool):
         if depth <= 0:
-            return 0.0, True
+            return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_belief), True
         history_node.compute_deterministic_actions_reward(self.reward_function)
         action_node = history_node.select_action(interactive_state,
                                                  history_node.parent.action,
@@ -122,3 +122,9 @@ class IPOMCP:
         if action.value == -2:
             reward = self.reward_function(observation)
         return reward
+
+    @staticmethod
+    def _compute_terminal_tree_reward(persona, nested_belief):
+        average_nested_persona = np.sum(nested_belief[:, 0] * nested_belief[:, 1])
+        split_pot = (persona - average_nested_persona) / 2
+        return split_pot
