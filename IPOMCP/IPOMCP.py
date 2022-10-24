@@ -29,6 +29,7 @@ class IPOMCP:
         self.seed = seed
         self.tree = dict()
         self.history_node = None
+        self.action_node = None
         self.exploration_bonus = float(self.config.get_from_env("exploration_bonus"))
         self.depth = float(self.config.get_from_env("planning_depth"))
         self.n_iterations = int(self.config.get_from_env("mcts_number_of_iterations"))
@@ -48,7 +49,10 @@ class IPOMCP:
         current_history_length = len(self.root_sampling.history)
         base_node = HistoryNode(None, Action(previous_counter_offer), self.action_exploration_policy)
         offer_node = base_node.add_action_node(Action(offer))
-        self.history_node = offer_node.add_history_node(Action(counter_offer), self.action_exploration_policy)
+        if self.action_node is None or str(counter_offer) not in self.action_node.children:
+            self.history_node = offer_node.add_history_node(Action(counter_offer), self.action_exploration_policy)
+        else:
+            self.history_node = self.action_node.children[str(counter_offer)]
         self.root_sampling.update_distribution(Action(offer), Action(counter_offer), first_move)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         iteration_times = []
