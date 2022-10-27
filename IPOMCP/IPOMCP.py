@@ -70,6 +70,7 @@ class IPOMCP:
         iteration_time_for_logging = pd.DataFrame(iteration_times)
         iteration_time_for_logging.columns = ["persona", "time"]
         get_logger().info(iteration_time_for_logging.groupby("persona").describe().to_string())
+        self.environment_simulator.reset_persona(current_history_length)
         return self.history_node.children, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
 
@@ -89,6 +90,7 @@ class IPOMCP:
             history_node.increment_visited()
             action_node.increment_visited()
             return self._halting_action_reward(action_node.action, history_node.observation.value), True
+
         new_interactive_state, observation, q_value, reward, log_prob = \
             self.environment_simulator.act(interactive_state,
                                            action_node.action,
@@ -127,8 +129,13 @@ class IPOMCP:
             reward = self.reward_function(observation)
         return reward
 
-    @staticmethod
-    def _compute_terminal_tree_reward(persona, nested_belief):
+    def _compute_terminal_tree_reward(self, persona, nested_belief):
         average_nested_persona = np.sum(nested_belief[:, 0] * nested_belief[:, 1])
-        split_pot = (persona - average_nested_persona) / 2
-        return split_pot
+        if self.action_exploration_policy.agent_type == "worker":
+            split_pot = (persona - average_nested_persona) / 2
+            final_offer = persona - split_pot
+        else:
+            split_pot = (average_nested_persona - persona) / 2
+            final_offer = split_pot - persona
+        reward = self.reward_function(final_offer)
+        return reward
