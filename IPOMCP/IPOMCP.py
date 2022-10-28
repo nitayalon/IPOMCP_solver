@@ -144,35 +144,35 @@ class IPOMCP:
         reward = self.reward_function(final_offer)
         return reward
 
-    def plot_max_value_trajectory(self, root_node: HistoryNode):
-        tree = self.extract_max_q_value_trajectory(root_node)
-        g = nx.DiGraph()
-        g.add_nodes_from(list(tree.keys()))
-        g.add_edges_from(zip(tree.keys(), [x[0] for x in tree.values()]))
-        nx.draw(g, with_labels=True)
-        plt.draw()
-        plt.show()
-        return tree
-
-    def extract_max_q_value_trajectory(self, root_node: HistoryNode, trajectory=None):
-        if trajectory is None:
-            tree = {'root': [root_node.observation.value, root_node.compute_node_value()]}
-        else:
-            tree = trajectory
-        max_q_value_action = np.argmax(root_node.children_qvalues[:, 1])
-        optimal_child = root_node.children[str(root_node.children_values[max_q_value_action])]
-        tree[str(root_node.observation.value)] = [optimal_child.action.value, optimal_child.q_value]
-        tree = self.extract_max_value_trajectory(optimal_child, tree)
-        return tree
-
-    def extract_max_value_trajectory(self, root_node: ActionNode, trajectory):
-        for potential_observation in root_node.children:
-            child = root_node.children[potential_observation]
-            node = [child.observation.value,
-                    child.compute_node_value()]
-            trajectory[str(root_node.action.value)] = node
-            trajectory = self.extract_max_q_value_trajectory(child, trajectory)
-        return trajectory
+    # def plot_max_value_trajectory(self, root_node: HistoryNode):
+    #     tree = self.extract_max_q_value_trajectory(root_node)
+    #     g = nx.DiGraph()
+    #     g.add_nodes_from(list(tree.keys()))
+    #     g.add_edges_from(zip(tree.keys(), [x[0] for x in tree.values()]))
+    #     nx.draw(g, with_labels=True)
+    #     plt.draw()
+    #     plt.show()
+    #     return tree
+    #
+    # def extract_max_q_value_trajectory(self, root_node: HistoryNode, trajectory=None):
+    #     if trajectory is None:
+    #         tree = {'root': [root_node.observation.value, root_node.compute_node_value()]}
+    #     else:
+    #         tree = trajectory
+    #     max_q_value_action = np.argmax(root_node.children_qvalues[:, 1])
+    #     optimal_child = root_node.children[str(root_node.children_values[max_q_value_action])]
+    #     tree[str(root_node.observation.value)] = [optimal_child.action.value, optimal_child.q_value]
+    #     tree = self.extract_max_value_trajectory(optimal_child, tree)
+    #     return tree
+    #
+    # def extract_max_value_trajectory(self, root_node: ActionNode, trajectory):
+    #     for potential_observation in root_node.children:
+    #         child = root_node.children[potential_observation]
+    #         node = [child.observation.value,
+    #                 child.compute_node_value()]
+    #         trajectory[str(root_node.action.value)] = node
+    #         trajectory = self.extract_max_q_value_trajectory(child, trajectory)
+    #     return trajectory
 
 
 
