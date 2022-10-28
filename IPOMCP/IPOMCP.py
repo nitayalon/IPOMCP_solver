@@ -4,8 +4,8 @@ from enviroment.nodes import *
 from enviroment.abstract_classes import *
 from ipomcp_config import get_config
 import time
-import networkx as nx
-import matplotlib.pyplot as plt
+# import networkx as nx
+# import matplotlib.pyplot as plt
 
 
 class IPOMCP:
@@ -73,7 +73,7 @@ class IPOMCP:
         iteration_time_for_logging.columns = ["persona", "time"]
         get_logger().info(iteration_time_for_logging.groupby("persona").describe().to_string())
         self.environment_simulator.reset_persona(current_history_length)
-        self.plot_max_value_trajectory(self.history_node)
+        # self.plot_max_value_trajectory(self.history_node)
         return self.history_node.children, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
 
