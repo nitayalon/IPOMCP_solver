@@ -47,8 +47,8 @@ class IPOMCP:
         :param counter_offer: observation_{t}
         :return: action_node
         """
-        previous_counter_offer = self.root_sampling.history[-2]
-        current_history_length = len(self.root_sampling.history)
+        previous_counter_offer = self.root_sampling.history.get_last_observation()
+        current_history_length = self.root_sampling.history.length()
         base_node = HistoryNode(None, Action(previous_counter_offer), self.action_exploration_policy)
         offer_node = base_node.add_action_node(Action(offer))
         if self.action_node is None or str(counter_offer) not in self.action_node.children:
@@ -108,8 +108,8 @@ class IPOMCP:
         new_history_node.particles.append(interactive_state)
         if observation.is_terminal:
             history_node.increment_visited()
-            new_history_node.increment_visited()
             action_node.increment_visited()
+            new_history_node.increment_visited()
             action_node.update_q_value(reward)
             return reward, observation.is_terminal
 
