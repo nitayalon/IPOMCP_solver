@@ -39,10 +39,10 @@ class IPOMCP:
         self.pruning_epsilon = 0.01
 
     def plan(self, offer, counter_offer,
-             first_move=False):
+             iteration_number):
         """
         
-        :param first_move:
+        :param iteration_number:
         :param offer:  action_{t-1}
         :param counter_offer: observation_{t}
         :return: action_node
@@ -55,7 +55,7 @@ class IPOMCP:
             self.history_node = offer_node.add_history_node(Action(counter_offer), self.action_exploration_policy)
         else:
             self.history_node = self.action_node.children[str(counter_offer)]
-        self.root_sampling.update_distribution(Action(offer), Action(counter_offer), first_move)
+        self.root_sampling.update_distribution(Action(offer), Action(counter_offer), iteration_number)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         iteration_times = []
         for i in range(self.n_iterations):
@@ -65,7 +65,7 @@ class IPOMCP:
             interactive_state = InteractiveState(None, persona, nested_belief)
             self.history_node.particles.append(interactive_state)
             start_time = time.time()
-            self.simulate(i, interactive_state, self.history_node, self.depth, self.seed, True)
+            self.simulate(i, interactive_state, self.history_node, self.depth, self.seed, True, iteration_number)
             end_time = time.time()
             iteration_time = end_time - start_time
             iteration_times.append([persona, iteration_time])
@@ -79,7 +79,7 @@ class IPOMCP:
 
     def simulate(self, trail_number, interactive_state: InteractiveState,
                  history_node: HistoryNode, depth,
-                 seed: int, tree: bool):
+                 seed: int, tree: bool, iteration_number):
         if depth <= 0:
             return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_belief), True
         history_node.compute_deterministic_actions_reward(self.reward_function)
@@ -97,7 +97,7 @@ class IPOMCP:
         new_interactive_state, observation, q_value, reward, log_prob = \
             self.environment_simulator.act(interactive_state,
                                            action_node.action,
-                                           history_node.observation, seed)
+                                           history_node.observation, seed, iteration_number)
         new_observation_flag = True
         if str(observation.value) in action_node.children:
             new_observation_flag = False
@@ -116,11 +116,11 @@ class IPOMCP:
         if new_observation_flag:
             action_node.children[str(new_history_node.observation)] = new_history_node
             future_reward, is_terminal = self.simulate(trail_number, new_interactive_state, new_history_node, depth - 1,
-                                                       seed, False)
+                                                       seed, False, iteration_number + 1)
             total = reward + future_reward
         else:
             future_reward, is_terminal = self.simulate(trail_number, new_interactive_state, new_history_node, depth - 1,
-                                                       seed, True)
+                                                       seed, True, iteration_number + 1)
             total = reward + future_reward
         history_node.increment_visited()
         action_node.increment_visited()
