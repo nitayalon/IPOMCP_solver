@@ -98,7 +98,7 @@ class IPOMCP:
         new_interactive_state, observation, q_value, reward, log_prob = \
             self.environment_simulator.act(interactive_state,
                                            action_node.action,
-                                           history_node.observation, seed, iteration_number)
+                                           history_node.observation, seed, iteration_number + 1)
         new_observation_flag = True
         if str(observation.value) in action_node.children:
             new_observation_flag = False
