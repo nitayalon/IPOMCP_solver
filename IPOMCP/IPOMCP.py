@@ -88,9 +88,9 @@ class IPOMCP:
                                                  history_node.parent.action,
                                                  history_node.observation,
                                                  tree)
-        get_logger().info(f'Iteration number{trail_number}, depth={depth},'                          
-                          f'selected action={action_node.action.value},'
-                          f'current q-value={action_node.q_value}')
+        # get_logger().info(f'Iteration number{trail_number}, depth={depth},'
+        #                   f'selected action={action_node.action.value},'
+        #                   f'current q-value={action_node.q_value}')
         action_node.append_particle(interactive_state)
         # If the selected action is terminal
         if action_node.action.is_terminal:
@@ -102,10 +102,10 @@ class IPOMCP:
             self.environment_simulator.act(interactive_state,
                                            action_node.action,
                                            history_node.observation, seed, iteration_number + 1)
-        get_logger().info(f'Iteration number{trail_number}, depth={depth},'
-                          f'selected action={action_node.action.value},'
-                          f'opponent response={observation.value},'
-                          f'estimated response q-value={q_value}')
+        # get_logger().info(f'Iteration number{trail_number}, depth={depth},'
+        #                   f'selected action={action_node.action.value},'
+        #                   f'opponent response={observation.value},'
+        #                   f'estimated response q-value={q_value}')
         new_observation_flag = True
         if str(observation.value) in action_node.children:
             new_observation_flag = False
