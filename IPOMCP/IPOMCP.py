@@ -36,7 +36,6 @@ class IPOMCP:
         self.depth = float(self.config.get_from_env("planning_depth"))
         self.n_iterations = int(self.config.get_from_env("mcts_number_of_iterations"))
         self.softmax_temperature = float(self.config.softmax_temperature)
-        self.pruning_epsilon = 0.01
 
     def plan(self, offer, counter_offer,
              iteration_number):
@@ -58,6 +57,7 @@ class IPOMCP:
         self.root_sampling.update_distribution(Action(offer), Action(counter_offer), iteration_number)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         iteration_times = []
+        depth_statistics = []
         for i in range(self.n_iterations):
             persona = root_samples[i]
             self.environment_simulator.reset_persona(persona, current_history_length,
@@ -66,13 +66,21 @@ class IPOMCP:
             interactive_state = InteractiveState(None, persona, nested_belief)
             self.history_node.particles.append(interactive_state)
             start_time = time.time()
-            self.simulate(i, interactive_state, self.history_node, self.depth, self.seed, True, iteration_number)
+            _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, True, iteration_number)
             end_time = time.time()
             iteration_time = end_time - start_time
             iteration_times.append([persona, iteration_time])
+            depth_statistics.append([persona, depth])
+        # Reporting iteration time
         iteration_time_for_logging = pd.DataFrame(iteration_times)
         iteration_time_for_logging.columns = ["persona", "time"]
         get_logger().info(iteration_time_for_logging.groupby("persona").describe().to_string())
+        get_logger().info("\n")
+        # Reporting average tree depth
+        tree_depth_for_logging = pd.DataFrame(depth_statistics)
+        tree_depth_for_logging.columns = ["persona", "depth"]
+        get_logger().info(tree_depth_for_logging.groupby("persona").describe().to_string())
+        get_logger().info("\n")
         self.environment_simulator.reset_persona(current_history_length)
         # self.plot_max_value_trajectory(self.history_node)
         return self.history_node.children, \
@@ -81,8 +89,8 @@ class IPOMCP:
     def simulate(self, trail_number, interactive_state: InteractiveState,
                  history_node: HistoryNode, depth,
                  seed: int, tree: bool, iteration_number):
-        if depth <= 0:
-            return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_belief), True
+        if depth >= self.depth:
+            return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_belief), True, depth
         history_node.compute_deterministic_actions_reward(self.reward_function)
         action_node = history_node.select_action(interactive_state,
                                                  history_node.parent.action,
@@ -96,7 +104,7 @@ class IPOMCP:
         if action_node.action.is_terminal:
             history_node.increment_visited()
             action_node.increment_visited()
-            return self._halting_action_reward(action_node.action, history_node.observation.value), True
+            return self._halting_action_reward(action_node.action, history_node.observation.value), True, depth
 
         new_interactive_state, observation, q_value, reward, log_prob = \
             self.environment_simulator.act(interactive_state,
@@ -119,21 +127,21 @@ class IPOMCP:
             action_node.increment_visited()
             new_history_node.increment_visited()
             action_node.update_q_value(reward)
-            return reward, observation.is_terminal
+            return reward, observation.is_terminal, depth
 
         if new_observation_flag:
             action_node.children[str(new_history_node.observation)] = new_history_node
-            future_reward, is_terminal = self.simulate(trail_number, new_interactive_state, new_history_node, depth - 1,
-                                                       seed, False, iteration_number + 1)
+            future_reward, is_terminal, depth = self.simulate(trail_number, new_interactive_state, new_history_node,
+                                                              depth + 1, seed, False, iteration_number + 1)
             total = reward + future_reward
         else:
-            future_reward, is_terminal = self.simulate(trail_number, new_interactive_state, new_history_node, depth - 1,
-                                                       seed, True, iteration_number + 1)
+            future_reward, is_terminal, depth = self.simulate(trail_number, new_interactive_state, new_history_node,
+                                                              depth + 1, seed, True, iteration_number + 1)
             total = reward + future_reward
         history_node.increment_visited()
         action_node.increment_visited()
         action_node.update_q_value(total)
-        return total, observation.is_terminal
+        return total, observation.is_terminal, depth
 
     def _halting_action_reward(self, action, observation):
         reward = 0.0
