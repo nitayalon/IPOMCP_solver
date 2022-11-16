@@ -46,8 +46,6 @@ class IPOMCP:
         :param counter_offer: observation_{t}
         :return: action_node
         """
-        get_logger().info(f"IPOMCP plan: offer={offer}, counter_offer={counter_offer}, iteration_number={iteration_number}")
-
         previous_counter_offer = self.root_sampling.history.get_last_observation()
         current_history_length = self.root_sampling.history.length()
         base_node = HistoryNode(None, Action(previous_counter_offer), self.action_exploration_policy)
@@ -99,9 +97,6 @@ class IPOMCP:
                                                  history_node.parent.action,
                                                  history_node.observation,
                                                  tree)
-        # get_logger().info(f'Iteration number{trail_number}, depth={depth},'
-        #                   f' selected action={action_node.action.value},'
-        #                   f' current q-value={action_node.q_value}')
         action_node.append_particle(interactive_state)
         # If the selected action is terminal
         if action_node.action.is_terminal:
@@ -113,10 +108,6 @@ class IPOMCP:
             self.environment_simulator.act(interactive_state,
                                            action_node.action,
                                            history_node.observation, seed, iteration_number + 1)
-        # get_logger().info(f'Iteration number{trail_number}, depth={depth},'
-        #                   f' selected action={action_node.action.value},'
-        #                   f' opponent response={observation.value},'
-        #                   f' estimated response q-value={q_value}')
         new_observation_flag = True
         if str(observation.value) in action_node.children:
             new_observation_flag = False
