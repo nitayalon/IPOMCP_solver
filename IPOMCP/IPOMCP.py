@@ -1,5 +1,4 @@
 import pandas as pd
-from utils.logger import *
 from enviroment.nodes import *
 from enviroment.abstract_classes import *
 from ipomcp_config import get_config
@@ -7,8 +6,6 @@ import time
 # import networkx as nx
 # import matplotlib.pyplot as plt
 from utils.logger import get_logger
-
-logger = get_logger()
 
 
 class IPOMCP:
@@ -49,7 +46,7 @@ class IPOMCP:
         :param counter_offer: observation_{t}
         :return: action_node
         """
-        logger.info(f"IPOMCP plan: offer={offer}, counter_offer={counter_offer}, iteration_number={iteration_number}")
+        get_logger().info(f"IPOMCP plan: offer={offer}, counter_offer={counter_offer}, iteration_number={iteration_number}")
 
         previous_counter_offer = self.root_sampling.history.get_last_observation()
         current_history_length = self.root_sampling.history.length()
@@ -65,7 +62,7 @@ class IPOMCP:
         depth_statistics = []
         for i in range(self.n_iterations):
             persona = root_samples[i]
-            logger.info(f'Iteration number {i}, sampled persona {persona}')
+            get_logger().info(f'Iteration number {i}, sampled persona {persona}')
             self.environment_simulator.reset_persona(persona, current_history_length,
                                                      self.root_sampling.opponent_belief)
             nested_belief = self.environment_simulator.opponent_model.belief_distribution.get_current_belief()
