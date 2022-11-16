@@ -6,6 +6,9 @@ from ipomcp_config import get_config
 import time
 # import networkx as nx
 # import matplotlib.pyplot as plt
+from utils.logger import get_logger
+
+logger = get_logger()
 
 
 class IPOMCP:
@@ -46,6 +49,8 @@ class IPOMCP:
         :param counter_offer: observation_{t}
         :return: action_node
         """
+        logger.info(f"IPOMCP plan: offers={offers}, counter_offer={counter_offer}, iteration_number={iteration_number}")
+
         previous_counter_offer = self.root_sampling.history.get_last_observation()
         current_history_length = self.root_sampling.history.length()
         base_node = HistoryNode(None, Action(previous_counter_offer), self.action_exploration_policy)
