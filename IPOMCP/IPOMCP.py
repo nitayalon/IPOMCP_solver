@@ -5,7 +5,7 @@ from ipomcp_config import get_config
 import time
 # import networkx as nx
 # import matplotlib.pyplot as plt
-from utils.logger import get_logger
+from IPOMCP_solver.utils.logger import get_logger
 
 
 class IPOMCP:

@@ -1,7 +1,7 @@
 import logging
 import os
 
-from IPOMCP.ipomcp_config import get_config
+from IPOMCP_solver.IPOMCP.ipomcp_config import get_config
 
 
 def get_logger():
