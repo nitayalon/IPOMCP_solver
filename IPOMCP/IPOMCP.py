@@ -1,6 +1,6 @@
 import pandas as pd
-from enviroment.nodes import *
-from enviroment.abstract_classes import *
+from nodes import *
+from abstract_classes import *
 from ipomcp_config import get_config
 import time
 # import networkx as nx
@@ -91,7 +91,7 @@ class IPOMCP:
                  history_node: HistoryNode, depth,
                  seed: int, tree: bool, iteration_number):
         if depth >= self.depth:
-            return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_belief), True, depth
+            return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_nested_belief), True, depth
         history_node.compute_deterministic_actions_reward(self.reward_function)
         action_node = history_node.select_action(interactive_state,
                                                  history_node.parent.action,
