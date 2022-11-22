@@ -85,7 +85,8 @@ class HistoryNode(TreeNode):
     def init_node(self):
         self.particles = []
         self.children_values = []
-        self.children_visited = np.vstack((self.exploration_policy.actions, np.repeat(0, self.exploration_policy.actions.shape[0]))).T
+        self.children_visited = np.vstack((self.exploration_policy.actions,
+                                           np.repeat(0, self.exploration_policy.actions.shape[0]))).T
         self.children_qvalues = np.vstack((self.exploration_policy.actions, self.init_q_value())).T
         self.visited_counter = 1
         for child in list(self.exploration_policy.actions):

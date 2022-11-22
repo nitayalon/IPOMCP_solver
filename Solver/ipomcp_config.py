@@ -7,7 +7,7 @@ import torch
 
 class Config(object):
     def __init__(self, environment, args, path: str):
-        self._config = confuse.Configuration('IPOMCP', __name__)
+        self._config = confuse.Configuration('Solver', __name__)
         self._config.set_file(path)
         self.env = environment
         self.args = args

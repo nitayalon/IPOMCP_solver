@@ -11,8 +11,8 @@ from IPOMCP_solver.utils.logger import get_logger
 class IPOMCP:
 
     def __init__(self,
-                 root_sampling,
-                 environment_simulator,
+                 root_sampling: BeliefDistribution,
+                 environment_simulator: EnvironmentModel,
                  exploration_policy,
                  reward_function,
                  seed: int):
@@ -82,7 +82,7 @@ class IPOMCP:
         tree_depth_for_logging.columns = ["persona", "depth"]
         get_logger().info(tree_depth_for_logging.groupby("persona").describe().to_string())
         get_logger().info("\n")
-        self.environment_simulator.reset_persona(current_history_length)
+        self.environment_simulator.reset_persona(None, current_history_length, None)
         # self.plot_max_value_trajectory(self.history_node)
         return self.history_node.children, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
@@ -91,7 +91,8 @@ class IPOMCP:
                  history_node: HistoryNode, depth,
                  seed: int, tree: bool, iteration_number):
         if depth >= self.depth:
-            return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_nested_belief), True, depth
+            return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_nested_belief), \
+                   True, depth
         history_node.compute_deterministic_actions_reward(self.reward_function)
         action_node = history_node.select_action(interactive_state,
                                                  history_node.parent.action,
@@ -104,10 +105,11 @@ class IPOMCP:
             action_node.increment_visited()
             return self._halting_action_reward(action_node.action, history_node.observation.value), True, depth
 
-        new_interactive_state, observation, q_value, reward, log_prob = \
-            self.environment_simulator.act(interactive_state,
-                                           action_node.action,
-                                           history_node.observation, seed, iteration_number + 1)
+        new_interactive_state, observation, reward = \
+            self.environment_simulator.step(interactive_state,
+                                            action_node.action,
+                                            history_node.observation,
+                                            seed, iteration_number + 1)
         new_observation_flag = True
         if str(observation.value) in action_node.children:
             new_observation_flag = False
@@ -116,6 +118,7 @@ class IPOMCP:
             new_history_node = action_node.add_history_node(observation, self.action_exploration_policy,
                                                             is_terminal=observation.is_terminal)
         new_history_node.particles.append(interactive_state)
+
         if observation.is_terminal:
             history_node.increment_visited()
             action_node.increment_visited()
