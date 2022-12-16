@@ -25,9 +25,9 @@ class Config(object):
 
     def get_agent_tom_level(self, role):
         if role == "agent":
-            return self.manager_tom_level
+            return self.agent_tom_level
         else:
-            return self.worker_tom_level
+            return self.subject_tom_level
 
     def get_from_env(self, key_in_env=None):
         res = self._config['environments'][f'{self.env}']
@@ -97,12 +97,12 @@ class Config(object):
         return self.args.first_mover
 
     @property
-    def manager_tom_level(self):
-        return self.args.manager_tom
+    def agent_tom_level(self):
+        return self.args.agent_tom
 
     @property
-    def worker_tom_level(self):
-        return self.args.worker_tom
+    def subject_tom_level(self):
+        return self.args.subject_tom
 
 _config = None
 

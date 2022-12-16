@@ -5,7 +5,7 @@ from IPOMCP_solver.Solver.ipomcp_config import get_config
 import time
 # import networkx as nx
 # import matplotlib.pyplot as plt
-from IPOMCP_solver.utils.logger import get_logger
+# from IPOMCP_solver.utils.logger import get_logger
 
 
 class IPOMCP:
@@ -32,7 +32,7 @@ class IPOMCP:
         self.tree = dict()
         self.history_node = None
         self.action_node = None
-        self.exploration_bonus = float(self.config.get_from_env("exploration_bonus"))
+        self.exploration_bonus = float(self.config.get_from_env("uct_exploration_bonus"))
         self.depth = float(self.config.get_from_env("planning_depth"))
         self.n_iterations = int(self.config.get_from_env("mcts_number_of_iterations"))
         self.softmax_temperature = float(self.config.softmax_temperature)
@@ -75,13 +75,13 @@ class IPOMCP:
         # Reporting iteration time
         iteration_time_for_logging = pd.DataFrame(iteration_times)
         iteration_time_for_logging.columns = ["persona", "time"]
-        get_logger().info(iteration_time_for_logging.groupby("persona").describe().to_string())
-        get_logger().info("\n")
+        # get_logger().info(iteration_time_for_logging.groupby("persona").describe().to_string())
+        # get_logger().info("\n")
         # Reporting average tree depth
-        tree_depth_for_logging = pd.DataFrame(depth_statistics)
-        tree_depth_for_logging.columns = ["persona", "depth"]
-        get_logger().info(tree_depth_for_logging.groupby("persona").describe().to_string())
-        get_logger().info("\n")
+        # tree_depth_for_logging = pd.DataFrame(depth_statistics)
+        # tree_depth_for_logging.columns = ["persona", "depth"]
+        # get_logger().info(tree_depth_for_logging.groupby("persona").describe().to_string())
+        # get_logger().info("\n")
         self.environment_simulator.reset_persona(None, current_history_length, None)
         # self.plot_max_value_trajectory(self.history_node)
         return self.history_node.children, \
@@ -91,7 +91,7 @@ class IPOMCP:
                  history_node: HistoryNode, depth,
                  seed: int, tree: bool, iteration_number):
         if depth >= self.depth:
-            return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_nested_belief), \
+            return 0.0, \
                    True, depth
         action_node = history_node.select_action(interactive_state,
                                                  history_node.parent.action,

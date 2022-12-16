@@ -74,7 +74,7 @@ class HistoryNode(TreeNode):
 
         self.exploration_policy = exploration_policy
         self.observation = observation
-        self.exploration_bonus = self.config.get_from_env("exploration_bonus")
+        self.exploration_bonus = self.config.get_from_env("uct_exploration_bonus")
         self.is_terminal = is_terminal
         self.init_node()
 

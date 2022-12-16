@@ -9,9 +9,9 @@ def get_logger():
     config = get_config()
     environment = config.args.environment
     seed = config.args.seed
-    manager_acting_agent = config.get_agent_tom_level("manager")
-    worker_acting_agent = config.get_agent_tom_level("worker")
-    configuration = f'{environment}_manager_{manager_acting_agent}_worker_{worker_acting_agent}_first_mover_{config.first_acting_agent}_seed_{seed}'
+    agent_tom_level = config.get_agent_tom_level("agent")
+    subject_tom_level = config.get_agent_tom_level("subject")
+    configuration = f'{environment}_agent_{agent_tom_level}_subject_{subject_tom_level}_seed_{seed}'
     logdir_path = os.path.join('logs', configuration)
     os.makedirs(logdir_path, exist_ok=True)
     log_path = os.path.join(logdir_path, 'info.log')
