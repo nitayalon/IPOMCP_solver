@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, Optional
 
 
 class Action:
@@ -14,12 +14,12 @@ class Action:
         self.is_terminal = terminal
 
     def __str__(self):
-        return str(self.value) if self.value else None
+        return str(self.value)
 
 
 class State:
 
-    def __init__(self, name:str, terminal:bool):
+    def __init__(self, name: str, terminal: bool):
         """
 
         :type name: str, the name of the state
@@ -31,7 +31,7 @@ class State:
 
 class InteractiveState:
 
-    def __init__(self, state:State, persona, opponent_belief):
+    def __init__(self, state: Optional[State], persona, opponent_belief):
         """
 
         :param state: State, indicating the state of the game
@@ -76,7 +76,9 @@ class History:
         self.observations = self.observations[0:(length-1)]
 
     def get_last_observation(self):
-        last_observation = self.observations[len(self.observations)-2]
+        last_observation = None
+        if len(self.observations) >= 2:
+            last_observation = self.observations[len(self.observations)-2]
         return last_observation
 
     def length(self):
@@ -103,11 +105,14 @@ class BeliefDistribution(ABC):
     def __init__(self, prior_belief, opponent_model):
         self.opponent_model = opponent_model
         self.prior_belief = prior_belief
-        self.belief = self.prior_belief
+        self.belief_distribution = self.prior_belief
         self.history = History()
 
     def reset_prior(self):
-        self.belief = self.prior_belief
+        self.belief_distribution = self.prior_belief
+
+    def get_current_belief(self):
+        return self.belief_distribution[:, -1]
 
     @abstractmethod
     def update_distribution(self, action, observation, first_move):
@@ -116,9 +121,6 @@ class BeliefDistribution(ABC):
     @abstractmethod
     def sample(self, rng_key, n_samples):
         pass
-
-    def get_current_belief(self):
-        return self.belief[:, -1]
 
     @abstractmethod
     def update_history(self, action, observation):

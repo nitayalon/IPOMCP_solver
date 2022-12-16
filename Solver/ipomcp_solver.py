@@ -1,7 +1,7 @@
 import pandas as pd
-from nodes import *
-from abstract_classes import *
-from ipomcp_config import get_config
+from IPOMCP_solver.Solver.nodes import *
+from IPOMCP_solver.Solver.abstract_classes import *
+from IPOMCP_solver.Solver.ipomcp_config import get_config
 import time
 # import networkx as nx
 # import matplotlib.pyplot as plt
@@ -62,9 +62,9 @@ class IPOMCP:
             persona = root_samples[i]
             # get_logger().info(f'Iteration number {i}, sampled persona {persona}')
             self.environment_simulator.reset_persona(persona, current_history_length,
-                                                     self.root_sampling.opponent_belief)
-            nested_belief = self.environment_simulator.opponent_model.belief_distribution.get_current_belief()
-            interactive_state = InteractiveState(None, persona, nested_belief)
+                                                     self.root_sampling.opponent_model.belief)
+            nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
+            interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)
             self.history_node.particles.append(interactive_state)
             start_time = time.time()
             _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, True, iteration_number)
@@ -93,7 +93,6 @@ class IPOMCP:
         if depth >= self.depth:
             return self._compute_terminal_tree_reward(interactive_state.persona, interactive_state.get_nested_belief), \
                    True, depth
-        history_node.compute_deterministic_actions_reward(self.reward_function)
         action_node = history_node.select_action(interactive_state,
                                                  history_node.parent.action,
                                                  history_node.observation,

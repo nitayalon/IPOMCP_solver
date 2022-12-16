@@ -3,8 +3,8 @@ from typing import Callable, Union
 import numpy as np
 import numpy.random as npr
 
-from ipomcp_config import get_config
-from abstract_classes import *
+from IPOMCP_solver.Solver.ipomcp_config import get_config
+from IPOMCP_solver.Solver.abstract_classes import *
 
 
 class TreeNode(object):
@@ -13,10 +13,6 @@ class TreeNode(object):
         self.parent = parent
         self.children = {}
         self.config = get_config()
-        self.k_o = self.config.get_from_env_exploration("k_o")
-        self.k_a = self.config.get_from_env_exploration("k_a")
-        self.alpha_a = self.config.get_from_env_exploration("alpha_a")
-        self.alpha_o = self.config.get_from_env_exploration("alpha_o")
 
     def export_tree_to_json(self):
         pass
@@ -94,13 +90,13 @@ class HistoryNode(TreeNode):
             self.add_action_node(Action(child, False), False, self.children_qvalues[idx, 1])
 
     def init_q_value(self):
-        exploration_reward = self.exploration_policy.reward_function(self.exploration_policy.actions)
+        exploration_reward = self.exploration_policy.reward_function(self.exploration_policy.actions, self.observation.value)
         if self.parent is None:
             return exploration_reward
         lower_bound = np.minimum(self.parent.action.value, self.observation.value)
         upper_bound = np.maximum(self.parent.action.value, self.observation.value)
         exploration_reward[np.where(np.logical_or(self.exploration_policy.actions < lower_bound,
-                                                   self.exploration_policy.actions > upper_bound))] = -np.inf
+                                                  self.exploration_policy.actions > upper_bound))] = -np.inf
         return exploration_reward
 
     @property

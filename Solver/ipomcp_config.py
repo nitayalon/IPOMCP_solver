@@ -1,8 +1,6 @@
 import os
 from typing import Union
-
 import confuse
-import torch
 
 
 class Config(object):
@@ -12,17 +10,13 @@ class Config(object):
         self.env = environment
         self.args = args
         self.game_params = None
-        self.cuda_is_available = torch.cuda.is_available()
-        torch.manual_seed(self.seed)
-        self.device = torch.device("cuda" if self.cuda_is_available else "cpu")
         self.q_values_dir, self.simulation_results_dir = self.create_experiment_dir()
 
     def create_experiment_dir(self):
         path_prefix = self.get_from_general("results_folder")
-        worker_agent = self.args.worker_tom  # self.get_from_env("agents")['worker']['agent_name']
-        manager_agent = self.args.manager_tom  # self.get_from_env("agents")['manager']['agent_name']
-        first_mover = self.args.first_mover
-        experiment_name = f'{manager_agent}_manager_{worker_agent}_worker_{first_mover}_begins_softmax_{self.args.softmax_temp}'
+        agent_tom = self.args.agent_tom  # self.get_from_env("agents")['worker']['agent_name']
+        subject_tom = self.args.subject_tom  # self.get_from_env("agents")['manager']['agent_name']
+        experiment_name = f'{subject_tom}_subject_{agent_tom}_agent_softmax_{self.args.softmax_temp}'
         q_values_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'q_values')
         simulation_results_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'simulation_results')
         os.makedirs(q_values_dir, exist_ok=True)
@@ -30,7 +24,7 @@ class Config(object):
         return q_values_dir, simulation_results_dir
 
     def get_agent_tom_level(self, role):
-        if role == "manager":
+        if role == "agent":
             return self.manager_tom_level
         else:
             return self.worker_tom_level
