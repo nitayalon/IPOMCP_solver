@@ -47,7 +47,6 @@ class IPOMCP:
         :return: action_node
         """
         previous_counter_offer = self.root_sampling.history.get_last_observation()
-        current_history_length = self.root_sampling.history.length()
         base_node = HistoryNode(None, Action(previous_counter_offer), self.action_exploration_policy)
         offer_node = base_node.add_action_node(Action(offer))
         if self.action_node is None or str(counter_offer) not in self.action_node.children:
@@ -82,7 +81,6 @@ class IPOMCP:
         # tree_depth_for_logging.columns = ["persona", "depth"]
         # get_logger().info(tree_depth_for_logging.groupby("persona").describe().to_string())
         # get_logger().info("\n")
-        self.environment_simulator.reset_persona(None, offer, counter_offer, None)
         # self.plot_max_value_trajectory(self.history_node)
         return self.history_node.children, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
