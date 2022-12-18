@@ -61,7 +61,7 @@ class IPOMCP:
         for i in range(self.n_iterations):
             persona = root_samples[i]
             # get_logger().info(f'Iteration number {i}, sampled persona {persona}')
-            self.environment_simulator.reset_persona(persona, current_history_length,
+            self.environment_simulator.reset_persona(persona, offer, counter_offer,
                                                      self.root_sampling.opponent_model.belief)
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
             interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)
@@ -82,7 +82,7 @@ class IPOMCP:
         # tree_depth_for_logging.columns = ["persona", "depth"]
         # get_logger().info(tree_depth_for_logging.groupby("persona").describe().to_string())
         # get_logger().info("\n")
-        self.environment_simulator.reset_persona(None, current_history_length, None)
+        self.environment_simulator.reset_persona(None, offer, counter_offer, None)
         # self.plot_max_value_trajectory(self.history_node)
         return self.history_node.children, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]

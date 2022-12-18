@@ -133,7 +133,7 @@ class EnvironmentModel(ABC):
         self.opponent_model = opponent_model
 
     @abstractmethod
-    def reset_persona(self, persona, history_length, nested_beliefs):
+    def reset_persona(self, persona, action, observation, nested_beliefs):
         pass
 
     @abstractmethod
