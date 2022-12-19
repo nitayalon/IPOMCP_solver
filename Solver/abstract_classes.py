@@ -141,3 +141,6 @@ class EnvironmentModel(ABC):
              iteration_number: int):
         pass
 
+    def reward_function(self, value, value1, param, persona):
+        pass
+

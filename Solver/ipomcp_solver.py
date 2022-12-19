@@ -88,13 +88,15 @@ class IPOMCP:
     def simulate(self, trail_number, interactive_state: InteractiveState,
                  history_node: HistoryNode, depth,
                  seed: int, tree: bool, iteration_number):
-        if depth >= self.depth:
-            return 0.0, \
-                   True, depth
         action_node = history_node.select_action(interactive_state,
                                                  history_node.parent.action,
                                                  history_node.observation,
                                                  tree)
+        if depth >= self.depth:
+            return self.environment_simulator.reward_function(history_node.observation.value,
+                                                              action_node.action.value,
+                                                              True, interactive_state.persona), \
+                   True, depth
         action_node.append_particle(interactive_state)
         # If the selected action is terminal
         if action_node.action.is_terminal:
