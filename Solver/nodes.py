@@ -121,13 +121,13 @@ class HistoryNode(TreeNode):
             self.children_values.append(str(new_action_node))
         return new_action_node
 
-    def select_action(self, interactive_state, last_cation, observation, in_tree=True) -> ActionNode:
+    def select_action(self, interactive_state, last_cation, observation, in_tree=True, iteration_number=None) -> ActionNode:
         rng_key = npr.default_rng(get_config().seed)
         if in_tree:
             action = self.uct()
         else:
             action, q_value = self.exploration_policy.sample(interactive_state, last_cation.value, observation.value,
-                                                             rng_key)
+                                                             rng_key, iteration_number)
             action = self.add_action_node(action, action.is_terminal, q_value)
         return action
 

@@ -71,6 +71,7 @@ class IPOMCP:
             iteration_time = end_time - start_time
             iteration_times.append([persona, iteration_time])
             depth_statistics.append([persona, depth])
+            self.environment_simulator.belief_distribution.reset_belief(iteration_number)
         # Reporting iteration time
         iteration_time_for_logging = pd.DataFrame(iteration_times)
         iteration_time_for_logging.columns = ["persona", "time"]
@@ -91,7 +92,7 @@ class IPOMCP:
         action_node = history_node.select_action(interactive_state,
                                                  history_node.parent.action,
                                                  history_node.observation,
-                                                 tree)
+                                                 tree, iteration_number)
         if depth >= self.depth:
             return self.environment_simulator.reward_function(history_node.observation.value,
                                                               action_node.action.value,

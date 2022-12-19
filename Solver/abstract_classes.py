@@ -78,7 +78,7 @@ class History:
     def get_last_observation(self):
         last_observation = None
         if len(self.observations) >= 2:
-            last_observation = self.observations[len(self.observations)-2]
+            last_observation = self.observations[len(self.observations)-1]
         return last_observation
 
     def length(self):
@@ -129,8 +129,9 @@ class BeliefDistribution(ABC):
 
 class EnvironmentModel(ABC):
 
-    def __init__(self, opponent_model):
+    def __init__(self, opponent_model, belief_distribution):
         self.opponent_model = opponent_model
+        self.belief_distribution = belief_distribution
 
     @abstractmethod
     def reset_persona(self, persona, action, observation, nested_beliefs):
