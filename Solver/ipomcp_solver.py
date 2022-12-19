@@ -110,6 +110,7 @@ class IPOMCP:
                                             action_node.action,
                                             history_node.observation,
                                             seed, iteration_number + 1)
+        history_node.update_reward(action_node.action, reward)
         new_observation_flag = True
         if str(observation.value) in action_node.children:
             new_observation_flag = False

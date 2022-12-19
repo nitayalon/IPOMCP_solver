@@ -77,6 +77,7 @@ class HistoryNode(TreeNode):
         self.exploration_bonus = self.config.get_from_env("uct_exploration_bonus")
         self.is_terminal = is_terminal
         self.init_node()
+        self.rewards = []
 
     def init_node(self):
         self.particles = []
@@ -92,6 +93,9 @@ class HistoryNode(TreeNode):
     def init_q_value(self):
         exploration_reward = self.exploration_policy.init_q_values(self.observation)
         return exploration_reward
+
+    def update_reward(self, action, reward):
+        self.rewards.append([action, reward])
 
     @property
     def previous_observation(self) -> Action:
