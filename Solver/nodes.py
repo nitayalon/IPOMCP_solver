@@ -45,7 +45,8 @@ class ActionNode(TreeNode):
 
     def update_q_value(self, reward):
         idx = np.where(self.parent.children_visited[:, 0] == self.action.value)
-        self.parent.children_qvalues[idx, 1] = self.q_value + (reward - self.q_value) / self.visit_counter
+        q_value = self.q_value + (reward - self.q_value) / self.visit_counter
+        self.parent.children_qvalues[idx, 1] = q_value
 
     def increment_visited(self):
         idx = np.where(self.parent.children_visited[:, 0] == self.action.value)
