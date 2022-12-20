@@ -95,8 +95,8 @@ class IPOMCP:
                                                  tree, iteration_number)
         if depth >= self.depth:
             return self.environment_simulator.reward_function(history_node.observation.value,
-                                                              action_node.action.value,
-                                                              True, interactive_state.persona), \
+                                                              action_node.action.value,interactive_state.persona,
+                                                              True), \
                    True, depth
         action_node.append_particle(interactive_state)
         # If the selected action is terminal
