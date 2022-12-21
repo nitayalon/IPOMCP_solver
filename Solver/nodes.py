@@ -1,7 +1,8 @@
 from typing import Callable, Union
-
+import uuid
 import numpy as np
 import numpy.random as npr
+import pandas as pd
 
 from IPOMCP_solver.Solver.ipomcp_config import get_config
 from IPOMCP_solver.Solver.abstract_classes import *
@@ -11,11 +12,18 @@ class TreeNode(object):
 
     def __init__(self, parent):
         self.parent = parent
+        self.id = uuid.uuid1()
         self.children = {}
         self.config = get_config()
+        self.particles = []
 
     def export_tree_to_json(self):
         pass
+
+    def summarize_particles_distribution(self):
+        particles = [x.persona for x in self.particles]
+        particles_distribution = pd.DataFrame(particles, columns=["persona"])
+        return particles_distribution["persona"].value_counts(normalize=True).reset_index()
 
 
 class ActionNode(TreeNode):
@@ -23,13 +31,12 @@ class ActionNode(TreeNode):
     def __init__(self, parent: TreeNode, action, is_terminal=False,
                  deterministic_q_value=0.0):
         self.action = action
-        self.particles = []
         self.is_terminal = is_terminal
         self.deterministic_q_value = deterministic_q_value
         super().__init__(parent)
 
     def append_particle(self, interactive_state: InteractiveState):
-        self.particles.append(interactive_state.persona)
+        self.particles.append(interactive_state)
 
     @property
     def q_value(self):

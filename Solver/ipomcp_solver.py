@@ -82,7 +82,8 @@ class IPOMCP:
         # tree_depth_for_logging.columns = ["persona", "depth"]
         # get_logger().info(tree_depth_for_logging.groupby("persona").describe().to_string())
         # get_logger().info("\n")
-        # self.plot_max_value_trajectory(self.history_node)
+        optimal_tree, optimal_tree_beliefs = self.extract_max_q_value_trajectory(self.history_node)
+        optimal_tree_table = pd.DataFrame(optimal_tree)
         return self.history_node.children, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
 
@@ -168,25 +169,33 @@ class IPOMCP:
     #     plt.show()
     #     return tree
     #
-    # def extract_max_q_value_trajectory(self, root_node: HistoryNode, trajectory=None):
-    #     if trajectory is None:
-    #         tree = {'root': [root_node.observation.value, root_node.compute_node_value()]}
-    #     else:
-    #         tree = trajectory
-    #     max_q_value_action = np.argmax(root_node.children_qvalues[:, 1])
-    #     optimal_child = root_node.children[str(root_node.children_values[max_q_value_action])]
-    #     tree[str(root_node.observation.value)] = [optimal_child.action.value, optimal_child.q_value]
-    #     tree = self.extract_max_value_trajectory(optimal_child, tree)
-    #     return tree
-    #
-    # def extract_max_value_trajectory(self, root_node: ActionNode, trajectory):
-    #     for potential_observation in root_node.children:
-    #         child = root_node.children[potential_observation]
-    #         node = [child.observation.value,
-    #                 child.compute_node_value()]
-    #         trajectory[str(root_node.action.value)] = node
-    #         trajectory = self.extract_max_q_value_trajectory(child, trajectory)
-    #     return trajectory
+    def extract_max_q_value_trajectory(self, root_node: HistoryNode, planning_tree=None, belief_tree=None):
+        if planning_tree is None or belief_tree is None:
+            tree = [["root", None, root_node.id, root_node.parent.action.value, root_node.observation.value, 0.0]]
+            beliefs = [["root", None, root_node.id,  root_node.summarize_particles_distribution()]]
+        else:
+            tree = planning_tree
+            beliefs = belief_tree
+        max_q_value_action = np.argmax(root_node.children_qvalues[:, 1])
+        optimal_child = root_node.children[str(root_node.children_values[max_q_value_action])]
+        tree.append(["action", root_node.id, optimal_child.id, optimal_child.parent.observation.value,
+                     optimal_child.action.value, optimal_child.q_value])
+        tree, beliefs = self.extract_max_value_trajectory(optimal_child, tree, beliefs)
+        return tree, beliefs
+
+    def extract_max_value_trajectory(self, root_node: ActionNode, planning_tree, beliefs_tree):
+        for potential_observation in root_node.children:
+            child = root_node.children[potential_observation]
+            node = ["observation",
+                    root_node.id, child.id,
+                    child.parent.action.value,
+                    child.observation.value,
+                    child.compute_node_value()]
+            beliefs = ["observation", root_node.id, child.id, root_node.summarize_particles_distribution()]
+            planning_tree.append(node)
+            beliefs_tree.append(beliefs)
+            planning_tree, beliefs_tree = self.extract_max_q_value_trajectory(child, planning_tree, beliefs_tree)
+        return planning_tree, beliefs_tree
 
 
 
