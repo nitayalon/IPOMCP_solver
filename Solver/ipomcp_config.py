@@ -104,6 +104,7 @@ class Config(object):
     def subject_tom_level(self):
         return self.args.subject_tom
 
+
 _config = None
 
 
