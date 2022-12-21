@@ -75,15 +75,10 @@ class IPOMCP:
         # Reporting iteration time
         iteration_time_for_logging = pd.DataFrame(iteration_times)
         iteration_time_for_logging.columns = ["persona", "time"]
-        # get_logger().info(iteration_time_for_logging.groupby("persona").describe().to_string())
-        # get_logger().info("\n")
-        # Reporting average tree depth
-        # tree_depth_for_logging = pd.DataFrame(depth_statistics)
-        # tree_depth_for_logging.columns = ["persona", "depth"]
-        # get_logger().info(tree_depth_for_logging.groupby("persona").describe().to_string())
-        # get_logger().info("\n")
         optimal_tree, optimal_tree_beliefs = self.extract_max_q_value_trajectory(self.history_node)
         optimal_tree_table = pd.DataFrame(optimal_tree)
+        belief_tree_table = pd.DataFrame(optimal_tree_beliefs)
+        optimal_tree_table.to_csv(self.config.simulation_results_dir + "/" + f'iteration_number_{iteration_number}_seed_{self.config.seed}.csv')
         return self.history_node.children, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
 
@@ -180,6 +175,8 @@ class IPOMCP:
         optimal_child = root_node.children[str(root_node.children_values[max_q_value_action])]
         tree.append(["action", root_node.id, optimal_child.id, optimal_child.parent.observation.value,
                      optimal_child.action.value, optimal_child.q_value])
+        beliefs.append(["action", root_node.id, optimal_child.id, optimal_child.parent.observation.value,
+                     optimal_child.action.value, optimal_child.summarize_particles_distribution()])
         tree, beliefs = self.extract_max_value_trajectory(optimal_child, tree, beliefs)
         return tree, beliefs
 
@@ -191,7 +188,8 @@ class IPOMCP:
                     child.parent.action.value,
                     child.observation.value,
                     child.compute_node_value()]
-            beliefs = ["observation", root_node.id, child.id, root_node.summarize_particles_distribution()]
+            beliefs = ["observation", root_node.id, child.id, child.parent.action.value,
+                       child.observation.value, root_node.summarize_particles_distribution()]
             planning_tree.append(node)
             beliefs_tree.append(beliefs)
             planning_tree, beliefs_tree = self.extract_max_q_value_trajectory(child, planning_tree, beliefs_tree)

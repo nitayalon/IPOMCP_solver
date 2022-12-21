@@ -10,18 +10,18 @@ class Config(object):
         self.env = environment
         self.args = args
         self.game_params = None
-        self.q_values_dir, self.simulation_results_dir = self.create_experiment_dir()
+        self.planning_results_dir, self.simulation_results_dir = self.create_experiment_dir()
 
     def create_experiment_dir(self):
         path_prefix = self.get_from_general("results_folder")
-        agent_tom = self.args.agent_tom  # self.get_from_env("agents")['worker']['agent_name']
-        subject_tom = self.args.subject_tom  # self.get_from_env("agents")['manager']['agent_name']
+        agent_tom = self.args.agent_tom
+        subject_tom = self.args.subject_tom
         experiment_name = f'{subject_tom}_subject_{agent_tom}_agent_softmax_{self.args.softmax_temp}'
-        q_values_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'q_values')
+        planning_results_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'planning_results')
         simulation_results_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'simulation_results')
-        os.makedirs(q_values_dir, exist_ok=True)
+        os.makedirs(planning_results_dir, exist_ok=True)
         os.makedirs(simulation_results_dir, exist_ok=True)
-        return q_values_dir, simulation_results_dir
+        return planning_results_dir, simulation_results_dir
 
     def get_agent_tom_level(self, role):
         if role == "agent":
