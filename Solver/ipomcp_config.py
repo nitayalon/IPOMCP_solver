@@ -10,7 +10,7 @@ class Config(object):
         self.env = environment
         self.args = args
         self.game_params = None
-        self.planning_results_dir, self.simulation_results_dir = self.create_experiment_dir()
+        self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir = self.create_experiment_dir()
 
     def create_experiment_dir(self):
         path_prefix = self.get_from_general("results_folder")
@@ -19,9 +19,11 @@ class Config(object):
         experiment_name = f'{subject_tom}_subject_{agent_tom}_agent_softmax_{self.args.softmax_temp}'
         planning_results_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'planning_results')
         simulation_results_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'simulation_results')
+        beliefs_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'beliefs')
         os.makedirs(planning_results_dir, exist_ok=True)
         os.makedirs(simulation_results_dir, exist_ok=True)
-        return planning_results_dir, simulation_results_dir
+        os.makedirs(beliefs_dir, exist_ok=True)
+        return planning_results_dir, simulation_results_dir, beliefs_dir
 
     def get_agent_tom_level(self, role):
         if role == "agent":
