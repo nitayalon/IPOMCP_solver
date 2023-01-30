@@ -46,10 +46,11 @@ class IPOMCP:
         :param counter_offer: observation_{t}
         :return: action_node
         """
-        previous_counter_offer = self.root_sampling.history.get_last_observation()
-        base_node = HistoryNode(None, Action(previous_counter_offer), self.action_exploration_policy)
-        offer_node = base_node.add_action_node(Action(offer))
+        current_history_length = len(self.root_sampling.history.actions)
         if self.action_node is None or str(counter_offer) not in self.action_node.children:
+            previous_counter_offer = self.root_sampling.history.get_last_observation()
+            base_node = HistoryNode(None, Action(previous_counter_offer), self.action_exploration_policy)
+            offer_node = base_node.add_action_node(Action(offer))
             self.history_node = offer_node.add_history_node(Action(counter_offer), self.action_exploration_policy)
         else:
             self.history_node = self.action_node.children[str(counter_offer)]
@@ -59,8 +60,7 @@ class IPOMCP:
         depth_statistics = []
         for i in range(self.n_iterations):
             persona = root_samples[i]
-            # get_logger().info(f'Iteration number {i}, sampled persona {persona}')
-            self.environment_simulator.reset_persona(persona, offer, counter_offer,
+            self.environment_simulator.reset_persona(persona, current_history_length,
                                                      self.root_sampling.opponent_model.belief)
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
             interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)

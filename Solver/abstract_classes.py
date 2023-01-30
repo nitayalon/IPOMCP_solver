@@ -68,21 +68,21 @@ class History:
     def __init__(self):
         self.actions = []
         self.observations = []
-        self.history = []
 
     def reset(self, length):
-        self.history = self.history[0:length]
-        self.actions = self.actions[0:(length-1)]
-        self.observations = self.observations[0:(length-1)]
+        if length >= 1:
+            self.actions = self.actions[0:length]
+            self.observations = self.observations[0:length]
+        else:
+            self.actions = []
+            self.observations = []
 
     def get_last_observation(self):
-        last_observation = None
-        if len(self.observations) >= 2:
-            last_observation = self.observations[len(self.observations)-1]
+        if len(self.observations) == 1:
+            last_observation = self.observations[-1]
+        else:
+            last_observation = self.observations[-2]
         return last_observation
-
-    def length(self):
-        return len(self.history)
 
     def update_history(self, action, observation):
         self.update_actions(action)
@@ -90,11 +90,9 @@ class History:
 
     def update_actions(self, action):
         self.actions.append(action)
-        self.history.append(action)
 
     def update_observations(self, observation):
         self.observations.append(observation)
-        self.history.append(observation)
 
 
 class BeliefDistribution(ABC):
@@ -134,7 +132,7 @@ class EnvironmentModel(ABC):
         self.belief_distribution = belief_distribution
 
     @abstractmethod
-    def reset_persona(self, persona, action, observation, nested_beliefs):
+    def reset_persona(self, persona, history_length, nested_beliefs):
         pass
 
     @abstractmethod
