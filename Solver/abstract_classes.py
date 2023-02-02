@@ -51,6 +51,10 @@ class InteractiveState:
         return self.persona
 
     @property
+    def get_belief(self):
+        return self.opponent_belief
+
+    @property
     def get_nested_belief(self):
         return self.opponent_belief
 

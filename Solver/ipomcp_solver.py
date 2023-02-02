@@ -1,4 +1,3 @@
-import pandas as pd
 from IPOMCP_solver.Solver.nodes import *
 from IPOMCP_solver.Solver.abstract_classes import *
 from IPOMCP_solver.Solver.ipomcp_config import get_config
@@ -76,10 +75,9 @@ class IPOMCP:
         iteration_time_for_logging = pd.DataFrame(iteration_times)
         iteration_time_for_logging.columns = ["persona", "time"]
         optimal_tree, optimal_tree_beliefs = self.extract_max_q_value_trajectory(self.history_node)
-        optimal_tree_table = pd.DataFrame(optimal_tree)
-        belief_tree_table = pd.DataFrame(optimal_tree_beliefs)
-        optimal_tree_table.to_csv(self.config.simulation_results_dir + "/" + f'iteration_number_{iteration_number}_seed_{self.config.seed}.csv')
-        return self.history_node.children, \
+        optimal_tree_table = pd.DataFrame(optimal_tree, columns=['node_type', 'parent_id', 'self_id', 'parent_value',
+                                                                 'self_value', 'q_value'])
+        return self.history_node.children, optimal_tree_table, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
 
     def simulate(self, trail_number, interactive_state: InteractiveState,
@@ -135,6 +133,26 @@ class IPOMCP:
         history_node.increment_visited()
         action_node.increment_visited()
         action_node.update_q_value(total)
+        return total, observation.is_terminal, depth
+
+    def rollout(self, interactive_state: InteractiveState, last_cation: Action, observation: Action, depth, seed: int,
+                iteration_number) -> [float, bool, int]:
+        if depth >= self.depth:
+            return self._compute_terminal_tree_reward(interactive_state.persona,
+                                                      interactive_state.get_belief), True, depth
+        action, _ = self.action_exploration_policy.sample(interactive_state, last_cation, observation)
+        if action.is_terminal:
+            reward = self._halting_action_reward(action, observation.value)
+            return reward, True, depth
+        new_interactive_state, observation, q_value, reward, log_prob = \
+            self.environment_simulator.opponent_model.act(interactive_state, action, observation, seed, iteration_number + 1)
+        if observation.is_terminal:
+            return reward, observation.is_terminal, depth
+        else:
+            self.action_exploration_policy.belief_distribution.update_history(action, observation, False)
+            future_reward, is_terminal, depth = self.rollout(new_interactive_state, action, observation, depth + 1,
+                                                             seed, iteration_number + 1)
+        total = reward + future_reward
         return total, observation.is_terminal, depth
 
     def _halting_action_reward(self, action, observation):
