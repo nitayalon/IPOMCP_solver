@@ -119,6 +119,9 @@ class Config(object):
     def set_experiment_name(self):
         return f'alpha_{self.args.subject_alpha}_gamma_{self.args.agent_threshold}'
 
+    def new_experiment_name(self):
+        self.experiment_name = self.set_experiment_name()
+
 
 _config = None
 
