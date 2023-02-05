@@ -10,22 +10,25 @@ class Config(object):
         self.env = environment
         self.args = args
         self.game_params = None
+        self.environment_name = None
         self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir, self.q_values_results_dir = \
             self.create_experiment_dir()
+        self.experiment_name = self.set_experiment_name()
 
     def create_experiment_dir(self):
         path_prefix = self.get_from_general("results_folder")
         agent_tom = self.args.agent_tom
         subject_tom = self.args.subject_tom
-        experiment_name = f'{subject_tom}_subject_{agent_tom}_agent_softmax_{self.args.softmax_temp}'
+        environment_name = f'{subject_tom}_subject_{agent_tom}_agent_softmax_{self.args.softmax_temp}'
+        self.environment_name = environment_name
         # Export MCTS trees
-        planning_results_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'planning_results')
+        planning_results_dir = os.path.join(str(path_prefix), self.env, environment_name, 'planning_results')
         # Export q_values
-        q_values_results_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'q_values')
+        q_values_results_dir = os.path.join(str(path_prefix), self.env, environment_name, 'q_values')
         # Export game outcomes
-        simulation_results_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'simulation_results')
+        simulation_results_dir = os.path.join(str(path_prefix), self.env, environment_name, 'simulation_results')
         # Export beliefs
-        beliefs_dir = os.path.join(str(path_prefix), self.env, experiment_name, 'beliefs')
+        beliefs_dir = os.path.join(str(path_prefix), self.env, environment_name, 'beliefs')
         os.makedirs(planning_results_dir, exist_ok=True)
         os.makedirs(simulation_results_dir, exist_ok=True)
         os.makedirs(beliefs_dir, exist_ok=True)
@@ -112,6 +115,9 @@ class Config(object):
     @property
     def subject_tom_level(self):
         return self.args.subject_tom
+
+    def set_experiment_name(self):
+        return f'alpha_{self.args.subject_alpha}_gamma_{self.args.agent_threshold}'
 
 
 _config = None
