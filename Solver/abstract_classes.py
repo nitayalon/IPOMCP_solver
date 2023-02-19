@@ -134,6 +134,7 @@ class EnvironmentModel(ABC):
     def __init__(self, opponent_model, belief_distribution):
         self.opponent_model = opponent_model
         self.belief_distribution = belief_distribution
+        self.reward_function = None
 
     @abstractmethod
     def reset_persona(self, persona, history_length, nested_beliefs):
@@ -142,8 +143,5 @@ class EnvironmentModel(ABC):
     @abstractmethod
     def step(self, interactive_state: InteractiveState, action: Action, observation: Action, seed: int,
              iteration_number: int):
-        pass
-
-    def reward_function(self, value, value1, param, persona):
         pass
 
