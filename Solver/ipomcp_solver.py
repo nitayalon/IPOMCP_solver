@@ -150,7 +150,6 @@ class IPOMCP:
         if observation.is_terminal:
             return reward, observation.is_terminal, depth
         else:
-            self.action_exploration_policy.belief_distribution.update_history(action, observation, False)
             future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state, action, observation, depth + 1,
                                                              seed, iteration_number + 1)
         total = reward + self.discount_factor * future_reward
