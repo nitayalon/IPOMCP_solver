@@ -145,8 +145,8 @@ class IPOMCP:
         if action.is_terminal:
             reward = self._halting_action_reward(action, observation.value)
             return reward, True, depth
-        new_interactive_state, observation, q_value, reward, log_prob = \
-            self.environment_simulator.opponent_model.act(interactive_state, action, observation, seed, iteration_number + 1)
+        new_interactive_state, observation, reward = \
+            self.environment_simulator.step(interactive_state, action, observation, seed, iteration_number + 1)
         if observation.is_terminal:
             return reward, observation.is_terminal, depth
         else:
