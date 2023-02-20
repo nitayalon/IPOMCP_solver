@@ -34,6 +34,7 @@ class IPOMCP:
         self.exploration_bonus = float(self.config.get_from_env("uct_exploration_bonus"))
         self.depth = float(self.config.get_from_env("planning_depth"))
         self.n_iterations = int(self.config.get_from_env("mcts_number_of_iterations"))
+        self.discount_factor = float(self.config.get_from_env("discount_factor"))
         self.softmax_temperature = float(self.config.softmax_temperature)
 
     def plan(self, offer, counter_offer,
@@ -65,7 +66,7 @@ class IPOMCP:
             interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)
             self.history_node.particles.append(interactive_state)
             start_time = time.time()
-            _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, True, iteration_number)
+            _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, iteration_number)
             end_time = time.time()
             iteration_time = end_time - start_time
             iteration_times.append([persona, iteration_time])
@@ -82,11 +83,11 @@ class IPOMCP:
 
     def simulate(self, trail_number, interactive_state: InteractiveState,
                  history_node: HistoryNode, depth,
-                 seed: int, tree: bool, iteration_number):
+                 seed: int, iteration_number):
         action_node = history_node.select_action(interactive_state,
                                                  history_node.parent.action,
                                                  history_node.observation,
-                                                 tree, iteration_number)
+                                                 True, iteration_number)
         if depth >= self.depth:
             reward = self.environment_simulator.reward_function(history_node.observation.value,
                                                                 action_node.action.value, interactive_state.persona,
@@ -123,24 +124,24 @@ class IPOMCP:
 
         if new_observation_flag:
             action_node.children[str(new_history_node.observation)] = new_history_node
-            future_reward, is_terminal, depth = self.simulate(trail_number, new_interactive_state, new_history_node,
-                                                              depth + 1, seed, False, iteration_number + 1)
-            total = reward + future_reward
+            future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state,
+                                                             action_node.action, observation, depth + 1,
+                                                             seed, iteration_number + 1)
         else:
             future_reward, is_terminal, depth = self.simulate(trail_number, new_interactive_state, new_history_node,
-                                                              depth + 1, seed, True, iteration_number + 1)
-            total = reward + future_reward
+                                                              depth + 1, seed, iteration_number + 1)
+        total = reward + self.discount_factor * future_reward
         history_node.increment_visited()
         action_node.increment_visited()
         action_node.update_q_value(total)
         return total, observation.is_terminal, depth
 
-    def rollout(self, interactive_state: InteractiveState, last_cation: Action, observation: Action, depth, seed: int,
+    def rollout(self, trail_number, interactive_state: InteractiveState, last_action: Action, observation: Action,
+                depth, seed: int,
                 iteration_number) -> [float, bool, int]:
         if depth >= self.depth:
-            return self._compute_terminal_tree_reward(interactive_state.persona,
-                                                      interactive_state.get_belief), True, depth
-        action, _ = self.action_exploration_policy.sample(interactive_state, last_cation, observation)
+            return 0.0, True, depth
+        action, _ = self.action_exploration_policy.sample(interactive_state, last_action.value, observation.value)
         if action.is_terminal:
             reward = self._halting_action_reward(action, observation.value)
             return reward, True, depth
@@ -150,9 +151,9 @@ class IPOMCP:
             return reward, observation.is_terminal, depth
         else:
             self.action_exploration_policy.belief_distribution.update_history(action, observation, False)
-            future_reward, is_terminal, depth = self.rollout(new_interactive_state, action, observation, depth + 1,
+            future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state, action, observation, depth + 1,
                                                              seed, iteration_number + 1)
-        total = reward + future_reward
+        total = reward + self.discount_factor * future_reward
         return total, observation.is_terminal, depth
 
     def _halting_action_reward(self, action, observation):
