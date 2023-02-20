@@ -141,7 +141,8 @@ class IPOMCP:
                 iteration_number) -> [float, bool, int]:
         if depth >= self.depth:
             return 0.0, True, depth
-        action, _ = self.action_exploration_policy.sample(interactive_state, last_action.value, observation.value)
+        action, _ = self.action_exploration_policy.sample(interactive_state, last_action.value, observation.value,
+                                                          iteration_number)
         if action.is_terminal:
             reward = self._halting_action_reward(action, observation.value)
             return reward, True, depth
