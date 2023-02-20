@@ -1,6 +1,8 @@
 import os
 from typing import Union
 import confuse
+import torch
+import numpy as np
 
 
 class Config(object):
@@ -14,6 +16,9 @@ class Config(object):
         self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir, self.q_values_results_dir = \
             self.create_experiment_dir()
         self.experiment_name = self.set_experiment_name()
+        self.cuda_is_available = torch.cuda.is_available()
+        torch.manual_seed(self.seed)
+        self.device = torch.device("cuda" if self.cuda_is_available else "cpu")
 
     def create_experiment_dir(self):
         path_prefix = self.get_from_general("results_folder")
