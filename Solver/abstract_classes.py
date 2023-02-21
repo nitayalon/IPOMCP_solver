@@ -145,3 +145,6 @@ class EnvironmentModel(ABC):
              iteration_number: int):
         pass
 
+    @abstractmethod
+    def update_persona(self, observation: Action, action: Action):
+        pass
