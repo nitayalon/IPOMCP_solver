@@ -131,7 +131,7 @@ class BeliefDistribution(ABC):
 
 class EnvironmentModel(ABC):
 
-    def __init__(self, opponent_model, belief_distribution):
+    def __init__(self, opponent_model=None, belief_distribution=None):
         self.opponent_model = opponent_model
         self.belief_distribution = belief_distribution
         self.reward_function = None
