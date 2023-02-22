@@ -129,7 +129,7 @@ class BeliefDistribution(ABC):
         pass
 
 
-class EnvironmentModel(ABC):
+class EnvironmentModel:
 
     def __init__(self, opponent_model=None, belief_distribution=None):
         self.opponent_model = opponent_model
