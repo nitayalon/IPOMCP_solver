@@ -2,7 +2,6 @@ import os
 from typing import Union
 import confuse
 import torch
-import numpy as np
 
 
 class Config(object):
@@ -15,7 +14,7 @@ class Config(object):
         self.environment_name = None
         self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir, self.q_values_results_dir = \
             self.create_experiment_dir()
-        self.experiment_name = self.set_experiment_name()
+        self.experiment_name = None
         self.cuda_is_available = torch.cuda.is_available()
         torch.manual_seed(self.seed)
         self.device = torch.device("cuda" if self.cuda_is_available else "cpu")
@@ -121,11 +120,8 @@ class Config(object):
     def subject_tom_level(self):
         return self.args.subject_tom
 
-    def set_experiment_name(self):
-        return f'alpha_{self.args.subject_alpha}_gamma_{self.args.agent_threshold}'
-
-    def new_experiment_name(self):
-        self.experiment_name = self.set_experiment_name()
+    def new_experiment_name(self, experiment_name):
+        self.experiment_name = experiment_name
 
 
 _config = None
