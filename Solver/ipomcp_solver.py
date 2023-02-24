@@ -37,6 +37,10 @@ class IPOMCP:
         self.discount_factor = float(self.config.get_from_env("discount_factor"))
         self.softmax_temperature = float(self.config.softmax_temperature)
 
+    def reset(self):
+        self.history_node = None
+        self.action_node = None
+
     def plan(self, offer, counter_offer,
              iteration_number):
         """
