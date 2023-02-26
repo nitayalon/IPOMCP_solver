@@ -111,11 +111,11 @@ class BeliefDistribution(ABC):
     Samples root particles from the current history
     """
 
-    def __init__(self, prior_belief, opponent_model):
+    def __init__(self, prior_belief, opponent_model, history: History):
         self.opponent_model = opponent_model
         self.prior_belief = prior_belief
         self.belief_distribution = self.prior_belief
-        self.history = History()
+        self.history = history
 
     def reset(self):
         self.history.reset(0)
@@ -136,8 +136,8 @@ class BeliefDistribution(ABC):
         pass
 
     @abstractmethod
-    def update_history(self, action, observation):
-        pass
+    def update_history(self, action, observation, reward):
+        self.history.update_history(action, observation, reward)
 
 
 class EnvironmentModel:
