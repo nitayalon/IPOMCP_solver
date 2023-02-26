@@ -72,14 +72,17 @@ class History:
     def __init__(self):
         self.actions = []
         self.observations = []
+        self.rewards = []
 
     def reset(self, length):
         if length >= 1:
             self.actions = self.actions[0:length]
             self.observations = self.observations[0:length]
+            self.rewards = self.rewards[0:length]
         else:
             self.actions = []
             self.observations = []
+            self.rewards = []
 
     def get_last_observation(self):
         if len(self.observations) == 1:
@@ -88,15 +91,19 @@ class History:
             last_observation = self.observations[-2]
         return last_observation
 
-    def update_history(self, action, observation):
+    def update_history(self, action: Action, observation: Action, reward: Optional[float] = None):
         self.update_actions(action)
         self.update_observations(observation)
+        self.update_observations(reward)
 
     def update_actions(self, action):
         self.actions.append(action)
 
     def update_observations(self, observation):
         self.observations.append(observation)
+
+    def update_rewards(self, reward):
+        self.rewards.append(reward)
 
 
 class BeliefDistribution(ABC):
