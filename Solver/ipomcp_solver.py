@@ -41,7 +41,7 @@ class IPOMCP:
         self.history_node = None
         self.action_node = None
 
-    def plan(self, offer, counter_offer,
+    def plan(self, offer: Action, counter_offer: Action,
              iteration_number):
         """
         
@@ -53,12 +53,12 @@ class IPOMCP:
         current_history_length = len(self.root_sampling.history.actions)
         if self.action_node is None or str(counter_offer) not in self.action_node.children:
             previous_counter_offer = self.root_sampling.history.get_last_observation()
-            base_node = HistoryNode(None, Action(previous_counter_offer), self.action_exploration_policy)
-            offer_node = base_node.add_action_node(Action(offer))
-            self.history_node = offer_node.add_history_node(Action(counter_offer), self.action_exploration_policy)
+            base_node = HistoryNode(None, previous_counter_offer, self.action_exploration_policy)
+            offer_node = base_node.add_action_node(offer)
+            self.history_node = offer_node.add_history_node(counter_offer, self.action_exploration_policy)
         else:
             self.history_node = self.action_node.children[str(counter_offer)]
-        self.root_sampling.update_distribution(Action(offer), Action(counter_offer), iteration_number)
+        self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         iteration_times = []
         depth_statistics = []
