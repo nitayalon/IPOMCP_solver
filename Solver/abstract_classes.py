@@ -94,7 +94,7 @@ class History:
     def update_history(self, action: Action, observation: Action, reward: Optional[float] = None):
         self.update_actions(action)
         self.update_observations(observation)
-        self.update_observations(reward)
+        self.update_rewards(reward)
 
     def update_actions(self, action):
         self.actions.append(action)
