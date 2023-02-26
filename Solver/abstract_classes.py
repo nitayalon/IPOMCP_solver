@@ -135,10 +135,6 @@ class BeliefDistribution(ABC):
     def sample(self, rng_key, n_samples):
         pass
 
-    @abstractmethod
-    def update_history(self, action, observation, reward):
-        self.history.update_history(action, observation, reward)
-
 
 class EnvironmentModel:
 
