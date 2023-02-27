@@ -4,7 +4,7 @@ from typing import Union, Optional
 
 class Action:
 
-    def __init__(self, value: float, terminal: bool = False):
+    def __init__(self, value: Optional[float], terminal: bool = False):
         """
 
         :param value: float, the q(value) of an action
@@ -74,21 +74,16 @@ class History:
         self.observations = []
         self.rewards = []
 
-    def reset(self, length):
-        if length >= 1:
-            self.actions = self.actions[0:length]
-            self.observations = self.observations[0:length]
-            self.rewards = self.rewards[0:length]
-        else:
-            self.actions = []
-            self.observations = []
-            self.rewards = []
+    def reset(self, action_length, observation_length):
+        self.actions = self.actions[0:action_length]
+        self.observations = self.observations[0:observation_length]
+        self.rewards = self.rewards[0:action_length]
 
     def get_last_observation(self):
-        if len(self.observations) == 1:
-            last_observation = self.observations[-1]
+        if len(self.observations) <= 1:
+            last_observation = Action(None, False)
         else:
-            last_observation = self.observations[-2]
+            last_observation = self.observations[-1]
         return last_observation
 
     def update_history(self, action: Action, observation: Action, reward: Optional[float] = None):
@@ -144,7 +139,7 @@ class EnvironmentModel:
         self.reward_function = None
 
     @abstractmethod
-    def reset_persona(self, persona, history_length, nested_beliefs):
+    def reset_persona(self, persona, action_length, observation_length, nested_beliefs):
         pass
 
     @abstractmethod

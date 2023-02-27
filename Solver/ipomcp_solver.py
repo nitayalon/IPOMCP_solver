@@ -50,7 +50,8 @@ class IPOMCP:
         :param counter_offer: observation_{t}
         :return: action_node
         """
-        current_history_length = len(self.root_sampling.history.actions)
+        action_length = len(self.root_sampling.history.actions)
+        observation_length = len(self.root_sampling.history.observations)
         if self.action_node is None or str(counter_offer) not in self.action_node.children:
             previous_counter_offer = self.root_sampling.history.get_last_observation()
             base_node = HistoryNode(None, previous_counter_offer, self.action_exploration_policy)
@@ -64,7 +65,7 @@ class IPOMCP:
         depth_statistics = []
         for i in range(self.n_iterations):
             persona = root_samples[i]
-            self.environment_simulator.reset_persona(persona, current_history_length,
+            self.environment_simulator.reset_persona(persona, action_length, observation_length,
                                                      self.root_sampling.opponent_model.belief)
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
             interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)
@@ -75,7 +76,8 @@ class IPOMCP:
             iteration_time = end_time - start_time
             iteration_times.append([persona, iteration_time])
             depth_statistics.append([persona, depth])
-            self.environment_simulator.belief_distribution.reset_belief(iteration_number)
+            self.environment_simulator.belief_distribution.reset_belief(iteration_number, action_length,
+                                                                        observation_length)
         # Reporting iteration time
         iteration_time_for_logging = pd.DataFrame(iteration_times)
         iteration_time_for_logging.columns = ["persona", "time"]
@@ -94,8 +96,7 @@ class IPOMCP:
                                                  True, iteration_number)
         if depth >= self.depth:
             reward = self.environment_simulator.reward_function(history_node.observation.value,
-                                                                action_node.action.value, interactive_state.persona,
-                                                                True)
+                                                                action_node.action.value)
             return reward, True, depth
         action_node.append_particle(interactive_state)
         # If the selected action is terminal
