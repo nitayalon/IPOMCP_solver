@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union, Optional
+from typing import Optional
 
 
 class Action:
@@ -113,7 +113,7 @@ class BeliefDistribution(ABC):
         self.history = history
 
     def reset(self):
-        self.history.reset(0)
+        self.history = History()
         self.belief_distribution = self.prior_belief
 
     def reset_prior(self):
