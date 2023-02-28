@@ -18,6 +18,8 @@ class Config(object):
         self.cuda_is_available = torch.cuda.is_available()
         torch.manual_seed(self.seed)
         self.device = torch.device("cuda" if self.cuda_is_available else "cpu")
+        self.report_ipocmp_statistics = bool(self.get_from_general("report_ipocmp_statistics"))
+        self.output_planning_tree = bool(self.get_from_general("output_planning_tree"))
 
     def create_experiment_dir(self):
         path_prefix = self.get_from_general("results_folder")

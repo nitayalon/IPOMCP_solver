@@ -79,11 +79,15 @@ class IPOMCP:
             self.environment_simulator.belief_distribution.reset_belief(iteration_number, action_length,
                                                                         observation_length)
         # Reporting iteration time
-        iteration_time_for_logging = pd.DataFrame(iteration_times)
-        iteration_time_for_logging.columns = ["persona", "time"]
-        optimal_tree, optimal_tree_beliefs = self.extract_max_q_value_trajectory(self.history_node)
-        optimal_tree_table = pd.DataFrame(optimal_tree, columns=['node_type', 'parent_id', 'self_id', 'parent_value',
-                                                                 'self_value', 'q_value'])
+        if self.config.report_ipocmp_statistics:
+            iteration_time_for_logging = pd.DataFrame(iteration_times)
+            iteration_time_for_logging.columns = ["persona", "time"]
+        if self.config.output_planning_tree:
+            optimal_tree, optimal_tree_beliefs = self.extract_max_q_value_trajectory(self.history_node)
+            optimal_tree_table = pd.DataFrame(optimal_tree, columns=['node_type', 'parent_id', 'self_id', 'parent_value',
+                                                                     'self_value', 'q_value'])
+        else:
+            optimal_tree_table = None
         return self.history_node.children, optimal_tree_table, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
 
