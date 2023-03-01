@@ -61,6 +61,7 @@ class IPOMCP:
             self.history_node = self.action_node.children[str(counter_offer)]
         self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
+        self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution[:, [0, -1]])        
         iteration_times = []
         depth_statistics = []
         for i in range(self.n_iterations):

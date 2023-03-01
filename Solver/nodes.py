@@ -98,6 +98,11 @@ class HistoryNode(TreeNode):
             idx = np.where(list(self.exploration_policy.actions) == child)
             self.add_action_node(Action(child, False), False, self.children_qvalues[idx, 1])
 
+    def update_q_values(self):
+        exploration_reward = self.exploration_policy.init_q_values(self.observation)
+        self.children_qvalues = np.vstack((self.exploration_policy.actions, exploration_reward)).T
+        return None
+
     def init_q_value(self):
         exploration_reward = self.exploration_policy.init_q_values(self.observation)
         return exploration_reward
