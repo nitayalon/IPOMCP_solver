@@ -113,7 +113,6 @@ class BeliefDistribution(ABC):
         self.history = history
 
     def reset(self):
-        self.history = History()
         self.belief_distribution = self.prior_belief
 
     def reset_prior(self):
