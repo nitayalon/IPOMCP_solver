@@ -25,9 +25,9 @@ class Config(object):
         path_prefix = self.get_from_general("results_folder")
         include_subject_threshold = self.get_from_env("include_subject_threshold")
         subject_threshold_status = f'include_subject_threshold_{include_subject_threshold}'
-        agent_tom = self.args.agent_tom
-        subject_tom = self.args.subject_tom
-        environment_name = f'{subject_tom}_subject_{agent_tom}_agent_softmax_{self.args.softmax_temp}'
+        sender_tom = self.args.sender_tom
+        receiver_tom = self.args.receiver_tom
+        environment_name = f'{receiver_tom}_subject_{sender_tom}_agent_softmax_{self.args.softmax_temp}'
         self.environment_name = environment_name
         general_path = os.path.join(str(path_prefix), self.env, subject_threshold_status, environment_name)
         # Export MCTS trees
@@ -45,10 +45,10 @@ class Config(object):
         return planning_results_dir, simulation_results_dir, beliefs_dir, q_values_results_dir
 
     def get_agent_tom_level(self, role):
-        if role == "agent":
-            return self.agent_tom_level
+        if role == "sender":
+            return self.args.sender_tom
         else:
-            return self.subject_tom_level
+            return self.args.receiver_tom
 
     def get_from_env(self, key_in_env=None):
         res = self._config['environments'][f'{self.env}']
