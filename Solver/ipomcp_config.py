@@ -36,7 +36,7 @@ class Config(object):
         # Export game outcomes
         simulation_results_dir = os.path.join(str(general_path), 'simulation_results')
         # Export beliefs
-        beliefs_dir = os.path.join(str(path_prefix), self.env, environment_name, 'beliefs')
+        beliefs_dir = os.path.join(str(general_path), 'beliefs')
         os.makedirs(planning_results_dir, exist_ok=True)
         os.makedirs(simulation_results_dir, exist_ok=True)
         os.makedirs(beliefs_dir, exist_ok=True)
