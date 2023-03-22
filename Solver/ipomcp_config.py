@@ -12,9 +12,10 @@ class Config(object):
         self.args = args
         self.game_params = None
         self.environment_name = None
+        self.experiment_name = None
+        self.subintentional_agent_type = str(self.get_from_env("subintentional_type"))
         self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir, self.q_values_results_dir = \
             self.create_experiment_dir()
-        self.experiment_name = None
         self.cuda_is_available = torch.cuda.is_available()
         torch.manual_seed(self.seed)
         self.device = torch.device("cuda" if self.cuda_is_available else "cpu")
