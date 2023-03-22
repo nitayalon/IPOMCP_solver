@@ -26,9 +26,9 @@ class Config(object):
         path_prefix = self.get_from_general("results_folder")
         sender_tom = self.args.sender_tom
         receiver_tom = self.args.receiver_tom
-        environment_name = f'{receiver_tom}_subject_{sender_tom}_agent_softmax_{self.args.softmax_temp}'
+        environment_name = f'{receiver_tom}_receiver_{sender_tom}_sender_softmax_temp_{self.args.softmax_temp}'
         self.environment_name = environment_name
-        general_path = os.path.join(str(path_prefix), self.env, environment_name)
+        general_path = os.path.join(str(path_prefix), self.env, self.subintentional_agent_type, environment_name)
         # Export MCTS trees
         planning_results_dir = os.path.join(str(general_path), 'planning_results')
         # Export q_values
