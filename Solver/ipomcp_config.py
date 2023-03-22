@@ -23,13 +23,11 @@ class Config(object):
 
     def create_experiment_dir(self):
         path_prefix = self.get_from_general("results_folder")
-        include_subject_threshold = self.get_from_env("include_subject_threshold")
-        subject_threshold_status = f'include_subject_threshold_{include_subject_threshold}'
         sender_tom = self.args.sender_tom
         receiver_tom = self.args.receiver_tom
         environment_name = f'{receiver_tom}_subject_{sender_tom}_agent_softmax_{self.args.softmax_temp}'
         self.environment_name = environment_name
-        general_path = os.path.join(str(path_prefix), self.env, subject_threshold_status, environment_name)
+        general_path = os.path.join(str(path_prefix), self.env, environment_name)
         # Export MCTS trees
         planning_results_dir = os.path.join(str(general_path), 'planning_results')
         # Export q_values
