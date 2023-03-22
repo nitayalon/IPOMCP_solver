@@ -79,6 +79,8 @@ class IPOMCP:
             depth_statistics.append([persona, depth])
             self.environment_simulator.belief_distribution.reset_belief(iteration_number, action_length,
                                                                         observation_length)
+        self.environment_simulator.reset_persona(None, action_length, observation_length,
+                                                 self.root_sampling.opponent_model.belief)
         # Reporting iteration time
         if self.config.report_ipocmp_statistics:
             iteration_time_for_logging = pd.DataFrame(iteration_times)
