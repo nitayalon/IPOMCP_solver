@@ -83,7 +83,7 @@ class History:
         if len(self.observations) <= 1:
             last_observation = Action(None, False)
         else:
-            last_observation = self.observations[-1]
+            last_observation = self.observations[-2]
         return last_observation
 
     def update_history(self, action: Action, observation: Action, reward: Optional[float] = None):

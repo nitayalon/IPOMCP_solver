@@ -36,6 +36,7 @@ class IPOMCP:
         self.n_iterations = int(self.config.get_from_env("mcts_number_of_iterations"))
         self.discount_factor = float(self.config.get_from_env("discount_factor"))
         self.softmax_temperature = float(self.config.softmax_temperature)
+        self.name = "IPOMCP"
 
     def reset(self):
         self.history_node = None
