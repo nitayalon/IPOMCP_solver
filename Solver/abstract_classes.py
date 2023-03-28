@@ -119,7 +119,7 @@ class BeliefDistribution(ABC):
         self.belief_distribution = self.prior_belief
 
     def get_current_belief(self):
-        return self.belief_distribution[:, -1]
+        return self.belief_distribution
 
     @abstractmethod
     def update_distribution(self, action, observation, first_move):
