@@ -44,7 +44,7 @@ class Config(object):
         return planning_results_dir, simulation_results_dir, beliefs_dir, q_values_results_dir
 
     def get_agent_tom_level(self, role):
-        if role == "sender":
+        if role == "rational_sender":
             return self.args.sender_tom
         else:
             return self.args.receiver_tom

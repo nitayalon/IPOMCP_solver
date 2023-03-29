@@ -36,19 +36,21 @@ class IPOMCP:
         self.n_iterations = int(self.config.get_from_env("mcts_number_of_iterations"))
         self.discount_factor = float(self.config.get_from_env("discount_factor"))
         self.softmax_temperature = float(self.config.softmax_temperature)
+        self.name = "IPOMCP"
 
     def reset(self):
         self.history_node = None
         self.action_node = None
 
     def plan(self, offer: Action, counter_offer: Action,
-             iteration_number):
+             iteration_number, update_belief):
         """
         
         :param iteration_number:
         :param offer:  action_{t-1}
         :param counter_offer: observation_{t}
         :return: action_node
+        :param update_belief:
         """
         action_length = len(self.root_sampling.history.actions)
         observation_length = len(self.root_sampling.history.observations)
@@ -67,7 +69,7 @@ class IPOMCP:
         for i in range(self.n_iterations):
             persona = root_samples[i]
             self.environment_simulator.reset_persona(persona, action_length, observation_length,
-                                                     self.root_sampling.opponent_model.belief)
+                                                     self.root_sampling.opponent_model.belief.belief_distribution[:, :max(2, iteration_number)])
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
             interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)
             self.history_node.particles.append(interactive_state)
@@ -77,10 +79,8 @@ class IPOMCP:
             iteration_time = end_time - start_time
             iteration_times.append([persona, iteration_time])
             depth_statistics.append([persona, depth])
-            self.environment_simulator.belief_distribution.reset_belief(iteration_number, action_length,
-                                                                        observation_length)
         self.environment_simulator.reset_persona(None, action_length, observation_length,
-                                                 self.root_sampling.opponent_model.belief)
+                                                 self.root_sampling.opponent_model.belief.belief_distribution[:, :max(2, iteration_number)])
         # Reporting iteration time
         if self.config.report_ipocmp_statistics:
             iteration_time_for_logging = pd.DataFrame(iteration_times)
