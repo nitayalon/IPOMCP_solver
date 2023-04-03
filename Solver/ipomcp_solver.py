@@ -63,13 +63,13 @@ class IPOMCP:
             self.history_node = self.action_node.children[str(counter_offer)]
         self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
-        self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution[:, [0, -1]])        
+        self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution)
         iteration_times = []
         depth_statistics = []
         for i in range(self.n_iterations):
             persona = root_samples[i]
             self.environment_simulator.reset_persona(persona, action_length, observation_length,
-                                                     self.root_sampling.opponent_model.belief.belief_distribution[:, :max(2, iteration_number)])
+                                                     self.root_sampling.opponent_model.belief.belief_distribution[:iteration_number, :])
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
             interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)
             self.history_node.particles.append(interactive_state)
@@ -80,7 +80,7 @@ class IPOMCP:
             iteration_times.append([persona, iteration_time])
             depth_statistics.append([persona, depth])
         self.environment_simulator.reset_persona(None, action_length, observation_length,
-                                                 self.root_sampling.opponent_model.belief.belief_distribution[:, :max(2, iteration_number)])
+                                                 self.root_sampling.opponent_model.belief.belief_distribution[:iteration_number, :])
         # Reporting iteration time
         if self.config.report_ipocmp_statistics:
             iteration_time_for_logging = pd.DataFrame(iteration_times)

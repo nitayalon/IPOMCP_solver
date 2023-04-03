@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
-
+import numpy as np
 
 class Action:
 
@@ -106,11 +106,12 @@ class BeliefDistribution(ABC):
     Samples root particles from the current history
     """
 
-    def __init__(self, prior_belief, opponent_model, history: History):
+    def __init__(self, support, prior_belief, opponent_model, history: History):
+        self.support = support
+        self.prior_belief = np.array([prior_belief])
         self.opponent_model = opponent_model
-        self.prior_belief = prior_belief
-        self.belief_distribution = self.prior_belief
         self.history = history
+        self.belief_distribution = self.prior_belief
 
     def reset(self):
         self.belief_distribution = self.prior_belief
