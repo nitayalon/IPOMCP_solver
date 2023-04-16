@@ -56,9 +56,9 @@ class IPOMCP:
         observation_length = len(self.root_sampling.history.observations)
         if self.action_node is None or str(counter_offer) not in self.action_node.children:
             previous_counter_offer = self.root_sampling.history.get_last_observation()
-            base_node = HistoryNode(None, previous_counter_offer, self.action_exploration_policy)
+            base_node = HistoryNode(None, previous_counter_offer, 1.0, self.action_exploration_policy)
             offer_node = base_node.add_action_node(offer)
-            self.history_node = offer_node.add_history_node(counter_offer, self.action_exploration_policy)
+            self.history_node = offer_node.add_history_node(counter_offer, 1.0, self.action_exploration_policy)
         else:
             self.history_node = self.action_node.children[str(counter_offer)]
         self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
@@ -88,7 +88,7 @@ class IPOMCP:
         if self.config.output_planning_tree:
             optimal_tree, optimal_tree_beliefs = self.extract_max_q_value_trajectory(self.history_node)
             optimal_tree_table = pd.DataFrame(optimal_tree, columns=['node_type', 'parent_id', 'self_id', 'parent_value',
-                                                                     'self_value', 'q_value'])
+                                                                     'self_value', 'probability', 'q_value'])
         else:
             optimal_tree_table = None
         return self.history_node.children, optimal_tree_table, \
@@ -112,7 +112,7 @@ class IPOMCP:
             action_node.increment_visited()
             return self._halting_action_reward(action_node.action, history_node.observation.value), True, depth
 
-        new_interactive_state, observation, reward = \
+        new_interactive_state, observation, reward, observation_probability = \
             self.environment_simulator.step(interactive_state,
                                             action_node.action,
                                             history_node.observation,
@@ -123,7 +123,8 @@ class IPOMCP:
             new_observation_flag = False
             new_history_node = action_node.children[str(observation.value)]
         else:
-            new_history_node = action_node.add_history_node(observation, self.action_exploration_policy,
+            new_history_node = action_node.add_history_node(observation, observation_probability,
+                                                            self.action_exploration_policy,
                                                             is_terminal=observation.is_terminal)
         new_history_node.particles.append(interactive_state)
 
@@ -152,14 +153,16 @@ class IPOMCP:
                 depth, seed: int,
                 iteration_number) -> [float, bool, int]:
         if depth >= self.depth:
-            return 0.0, True, depth
+            reward = self.environment_simulator.reward_function(observation.value,
+                                                                last_action.value)
+            return reward, True, depth
         action, _ = self.action_exploration_policy.sample(interactive_state,
                                                           last_action.value, observation.value,
                                                           iteration_number)
         if action.is_terminal:
             reward = self._halting_action_reward(action, observation.value)
             return reward, True, depth
-        new_interactive_state, observation, reward = \
+        new_interactive_state, observation, reward, observation_probability = \
             self.environment_simulator.step(interactive_state, action, observation, seed, iteration_number + 1)
         if observation.is_terminal:
             return reward, observation.is_terminal, depth
@@ -206,9 +209,9 @@ class IPOMCP:
         max_q_value_action = np.argmax(root_node.children_qvalues[:, 1])
         optimal_child = root_node.children[str(root_node.children_values[max_q_value_action])]
         tree.append(["action", root_node.id, optimal_child.id, optimal_child.parent.observation.value,
-                     optimal_child.action.value, optimal_child.q_value])
+                     optimal_child.action.value, 1.0, optimal_child.q_value])
         beliefs.append(["action", root_node.id, optimal_child.id, optimal_child.parent.observation.value,
-                     optimal_child.action.value, optimal_child.summarize_particles_distribution()])
+                     optimal_child.action.value, 1.0, optimal_child.summarize_particles_distribution()])
         tree, beliefs = self.extract_max_value_trajectory(optimal_child, tree, beliefs)
         return tree, beliefs
 
@@ -219,6 +222,7 @@ class IPOMCP:
                     root_node.id, child.id,
                     child.parent.action.value,
                     child.observation.value,
+                    child.probability,
                     child.compute_node_value()]
             beliefs = ["observation", root_node.id, child.id, child.parent.action.value,
                        child.observation.value, root_node.summarize_particles_distribution()]
