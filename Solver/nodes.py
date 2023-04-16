@@ -59,10 +59,10 @@ class ActionNode(TreeNode):
         idx = np.where(self.parent.children_visited[:, 0] == self.action.value)
         self.parent.children_visited[idx, 1] += 1
 
-    def add_history_node(self, observation,
+    def add_history_node(self, observation, observation_probability,
                          action_exploration_policy,
                          is_terminal: bool = False):
-        history_node = HistoryNode(self, observation, action_exploration_policy,
+        history_node = HistoryNode(self, observation, observation_probability, action_exploration_policy,
                                    is_terminal=is_terminal)
         self.children[str(history_node.observation)] = history_node
         return history_node
@@ -76,12 +76,14 @@ class HistoryNode(TreeNode):
     def __init__(self,
                  parent: Union[TreeNode, None],
                  observation: Action,
+                 probability: float,
                  exploration_policy,
                  is_terminal=False):
         super().__init__(parent)
 
         self.exploration_policy = exploration_policy
         self.observation = observation
+        self.probability = probability
         self.exploration_bonus = self.config.get_from_env("uct_exploration_bonus")
         self.is_terminal = is_terminal
         self.init_node()
