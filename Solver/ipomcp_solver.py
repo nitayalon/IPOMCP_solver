@@ -152,7 +152,9 @@ class IPOMCP:
                 depth, seed: int,
                 iteration_number) -> [float, bool, int]:
         if depth >= self.depth:
-            return 0.0, True, depth
+            reward = self.environment_simulator.reward_function(observation.value,
+                                                                last_action.value)
+            return reward, True, depth
         action, _ = self.action_exploration_policy.sample(interactive_state,
                                                           last_action.value, observation.value,
                                                           iteration_number)
