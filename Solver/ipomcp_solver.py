@@ -10,7 +10,7 @@ class IPOMCP:
     def __init__(self,
                  root_sampling: BeliefDistribution,
                  environment_simulator: EnvironmentModel,
-                 memoization_table: MemoizationTable,
+                 memoization_table: Optional[MemoizationTable],
                  exploration_policy,
                  reward_function,
                  planning_parameters: dict,
@@ -69,7 +69,7 @@ class IPOMCP:
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         # Check if we already have Q-values for this setting:
         query_parameters = {'trial': iteration_number, 'threshold': self.planning_parameters['threshold'],
-                            'belief': self.root_sampling.belief_distribution}
+                            'belief': self.environment_simulator.opponent_model.belief.belief_distribution[-1]}
         q_values = self.memoization_table.query_table(query_parameters)
         if not q_values.empty:
             return self.history_node.children, None, np.c_[q_values, np.repeat(10,q_values.shape[0])]
