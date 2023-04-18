@@ -1,3 +1,5 @@
+import numpy as np
+
 from IPOMCP_solver.Solver.nodes import *
 from IPOMCP_solver.Solver.abstract_classes import *
 from IPOMCP_solver.Solver.ipomcp_config import get_config
@@ -101,6 +103,12 @@ class IPOMCP:
                                                                      'self_value', 'probability', 'q_value'])
         else:
             optimal_tree_table = None
+        self.memoization_table.update_table(self.history_node.children_qvalues,
+                                            np.array([offer.value, counter_offer.value]),
+                                            query_parameters['belief'],
+                                            game_parameters={'trial': query_parameters['trial'],
+                                                             'seed': self.planning_parameters['seed'],
+                                                             'threshold': query_parameters['threshold']})
         return self.history_node.children, optimal_tree_table, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
 

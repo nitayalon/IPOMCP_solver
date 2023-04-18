@@ -1,6 +1,7 @@
 from abc import ABC
 from IPOMCP_solver.Solver.ipomcp_config import *
 import pandas as pd
+import numpy as np
 
 
 class MemoizationTable(ABC):
@@ -17,4 +18,7 @@ class MemoizationTable(ABC):
         pass
 
     def query_table(self, query_parameters: dict):
+        pass
+
+    def update_table(self, q_values: np.array, history: np.array, beliefs: np.array, game_parameters: dict):
         pass
