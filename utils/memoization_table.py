@@ -5,13 +5,19 @@ import numpy as np
 
 
 class MemoizationTable(ABC):
-    def __init__(self):
+    def __init__(self, path_to_memoization_dir):
+        self.path_to_dir = path_to_memoization_dir
         self.config = get_config()
         self.device = self.config.device
-        self.data = self.load_behavioural_data()
+        self.original_data = self.load_data()
+        self.data = self.original_data
+        self.new_data = pd.DataFrame()
 
-    def load_behavioural_data(self):
+    def load_data(self):
         return pd.DataFrame()
+
+    def save_data(self):
+        pass
 
     @staticmethod
     def load_results(directory_name):
