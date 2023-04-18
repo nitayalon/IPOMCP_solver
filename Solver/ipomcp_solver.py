@@ -1,10 +1,8 @@
 from IPOMCP_solver.Solver.nodes import *
 from IPOMCP_solver.Solver.abstract_classes import *
 from IPOMCP_solver.Solver.ipomcp_config import get_config
+from IPOMCP_solver.utils.memoization_table import MemoizationTable
 import time
-# import networkx as nx
-# import matplotlib.pyplot as plt
-# from IPOMCP_solver.utils.logger import get_logger
 
 
 class IPOMCP:
@@ -12,22 +10,28 @@ class IPOMCP:
     def __init__(self,
                  root_sampling: BeliefDistribution,
                  environment_simulator: EnvironmentModel,
+                 memoization_table: MemoizationTable,
                  exploration_policy,
                  reward_function,
+                 planning_parameters: dict,
                  seed: int):
         """
 
         :param root_sampling: Generative model for sampling root IS particles
         :param environment_simulator: Generative model for simulating environment dynamics
+        :param memoization_table: Q-values memoization table for querying
         :param exploration_policy: An exploration policy class
         :param reward_function: reward function for computation of accept value
+        :param planning_parameters: dict, additional parameters for planning
         """
         self.root_sampling = root_sampling
         self.environment_simulator = environment_simulator
+        self.memoization_table = memoization_table
         self.action_exploration_policy = exploration_policy
         self.reward_function = reward_function
-        self.config = get_config()
+        self.planning_parameters = planning_parameters
         self.seed = seed
+        self.config = get_config()
         self.tree = dict()
         self.history_node = None
         self.action_node = None
@@ -63,6 +67,12 @@ class IPOMCP:
             self.history_node = self.action_node.children[str(counter_offer)]
         self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
+        # Check if we already have Q-values for this setting:
+        query_parameters = {'trial': iteration_number, 'threshold': self.planning_parameters['threshold'],
+                            'belief': self.root_sampling.belief_distribution}
+        q_values = self.memoization_table.query_table(query_parameters)
+        if not q_values.empty:
+            return self.history_node.children, None, np.c_[q_values, np.repeat(10,q_values.shape[0])]
         self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution)
         iteration_times = []
         depth_statistics = []
