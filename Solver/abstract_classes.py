@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 import numpy as np
 
+
 class Action:
 
     def __init__(self, value: Optional[float], terminal: bool = False):
