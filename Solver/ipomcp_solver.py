@@ -1,5 +1,3 @@
-import numpy as np
-
 from IPOMCP_solver.Solver.nodes import *
 from IPOMCP_solver.Solver.abstract_classes import *
 from IPOMCP_solver.Solver.ipomcp_config import get_config
@@ -103,6 +101,7 @@ class IPOMCP:
                                                                      'self_value', 'probability', 'q_value'])
         else:
             optimal_tree_table = None
+        # update buffer with new information
         self.memoization_table.update_table(self.history_node.children_qvalues,
                                             np.array([offer.value, counter_offer.value]),
                                             query_parameters['belief'],
