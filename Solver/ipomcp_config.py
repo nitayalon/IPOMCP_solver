@@ -27,8 +27,9 @@ class Config(object):
         sender_tom = self.args.sender_tom
         receiver_tom = self.args.receiver_tom
         environment_name = f'{receiver_tom}_receiver_{sender_tom}_sender_softmax_temp_{self.args.softmax_temp}'
-        self.environment_name = environment_name
-        general_path = os.path.join(str(path_prefix), self.env, self.subintentional_agent_type, environment_name)
+        which_senders = self._infer_senders_types()
+        self.environment_name = f'{environment_name}_{which_senders}'
+        general_path = os.path.join(str(path_prefix), self.env, self.subintentional_agent_type, f'{environment_name}_{which_senders}')
         # Export MCTS trees
         planning_results_dir = os.path.join(str(general_path), 'planning_results')
         # Export q_values
@@ -126,6 +127,15 @@ class Config(object):
 
     def new_experiment_name(self, experiment_name):
         self.experiment_name = experiment_name
+
+    def _infer_senders_types(self):
+        random_agent = True
+        rational_agent = True
+        if self.get_from_general("skip_random"):
+            random_agent = False
+        if self.get_from_general("skip_rational"):
+            rational_agent = False
+        return f'random_sender_included_{random_agent}_rational_sender_included_{rational_agent}'
 
 
 _config = None
