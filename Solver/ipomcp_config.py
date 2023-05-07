@@ -14,8 +14,8 @@ class Config(object):
         self.environment_name = None
         self.experiment_name = None
         self.subintentional_agent_type = str(self.get_from_env("subintentional_type"))
-        self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir, self.q_values_results_dir = \
-            self.create_experiment_dir()
+        self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir, self.q_values_results_dir, \
+        self.path_to_memoization_data = self.create_experiment_dir()
         self.cuda_is_available = torch.cuda.is_available()
         torch.manual_seed(self.seed)
         self.device = torch.device("cuda" if self.cuda_is_available else "cpu")
@@ -24,12 +24,15 @@ class Config(object):
 
     def create_experiment_dir(self):
         path_prefix = self.get_from_general("results_folder")
+        duration = self.get_from_env("n_trials")
+        duration = "long_duration" if duration == 20 else "short_duration"
         sender_tom = self.args.sender_tom
         receiver_tom = self.args.receiver_tom
         environment_name = f'{receiver_tom}_receiver_{sender_tom}_sender_softmax_temp_{self.args.softmax_temp}'
         which_senders = self._infer_senders_types()
         self.environment_name = f'{environment_name}_{which_senders}'
-        general_path = os.path.join(str(path_prefix), self.env, self.subintentional_agent_type, f'{environment_name}_{which_senders}')
+        experiment_path = os.path.join(str(path_prefix), self.env, duration)
+        general_path = os.path.join(experiment_path, f'{environment_name}_{which_senders}')
         # Export MCTS trees
         planning_results_dir = os.path.join(str(general_path), 'planning_results')
         # Export q_values
@@ -38,11 +41,13 @@ class Config(object):
         simulation_results_dir = os.path.join(str(general_path), 'simulation_results')
         # Export beliefs
         beliefs_dir = os.path.join(str(general_path), 'beliefs')
+        # Memoization data
+        memoization_dir = os.path.join(experiment_path, 'memoization')
         os.makedirs(planning_results_dir, exist_ok=True)
         os.makedirs(simulation_results_dir, exist_ok=True)
         os.makedirs(beliefs_dir, exist_ok=True)
         os.makedirs(q_values_results_dir, exist_ok=True)
-        return planning_results_dir, simulation_results_dir, beliefs_dir, q_values_results_dir
+        return planning_results_dir, simulation_results_dir, beliefs_dir, q_values_results_dir, memoization_dir
 
     def get_agent_tom_level(self, role):
         if role == "rational_sender":
