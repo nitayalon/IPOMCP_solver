@@ -149,5 +149,5 @@ class EnvironmentModel:
         pass
 
     @abstractmethod
-    def update_persona(self, observation: Action, action: Action):
+    def update_persona(self, observation: Action, action: Action, iteration_number: Optional[int]):
         pass
