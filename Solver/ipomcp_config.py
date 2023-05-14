@@ -10,6 +10,7 @@ class Config(object):
         self._config.set_file(path)
         self.env = environment
         self.args = args
+        self.task_duration = self.get_from_env("n_trials")
         self.game_params = None
         self.environment_name = None
         self.experiment_name = None
