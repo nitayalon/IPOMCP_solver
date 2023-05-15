@@ -79,7 +79,7 @@ class IPOMCP:
         for i in range(self.n_iterations):
             persona = root_samples[i]
             self.environment_simulator.reset_persona(persona, action_length, observation_length,
-                                                     self.root_sampling.opponent_model.belief.belief_distribution[:iteration_number, :])
+                                                     self.root_sampling.opponent_model.belief.belief_distribution[:iteration_number+1, :])
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
             interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)
             self.history_node.particles.append(interactive_state)
@@ -90,7 +90,7 @@ class IPOMCP:
             iteration_times.append([persona, iteration_time])
             depth_statistics.append([persona, depth])
         self.environment_simulator.reset_persona(None, action_length, observation_length,
-                                                 self.root_sampling.opponent_model.belief.belief_distribution[:iteration_number, :])
+                                                 self.root_sampling.opponent_model.belief.belief_distribution[:iteration_number+1, :])
         # Reporting iteration time
         if self.config.report_ipocmp_statistics:
             iteration_time_for_logging = pd.DataFrame(iteration_times)
@@ -118,7 +118,7 @@ class IPOMCP:
                                                  history_node.parent.action,
                                                  history_node.observation,
                                                  True, iteration_number)
-        if depth >= self.depth:
+        if depth >= self.depth or iteration_number >= self.config.task_duration:
             reward = self.environment_simulator.reward_function(history_node.observation.value,
                                                                 action_node.action.value)
             return reward, True, depth
@@ -169,7 +169,7 @@ class IPOMCP:
     def rollout(self, trail_number, interactive_state: InteractiveState, last_action: Action, observation: Action,
                 depth, seed: int,
                 iteration_number) -> [float, bool, int]:
-        if depth >= self.depth:
+        if depth >= self.depth or iteration_number >= self.config.task_duration:
             reward = self.environment_simulator.reward_function(observation.value,
                                                                 last_action.value)
             return reward, True, depth
