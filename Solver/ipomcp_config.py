@@ -25,6 +25,7 @@ class Config(object):
 
     def create_experiment_dir(self):
         path_prefix = self.get_from_general("results_folder")
+        number_of_rational_agents = self.get_from_general("single_rational")
         duration = self.get_from_env("n_trials")
         duration = "long_duration" if duration == 20 else "short_duration"
         sender_tom = self.args.sender_tom
