@@ -72,7 +72,8 @@ class IPOMCP:
                             'belief': self.environment_simulator.opponent_model.belief.belief_distribution[-1]}
         q_values = self.memoization_table.query_table(query_parameters)
         if not q_values.empty:
-            return self.history_node.children, None, np.c_[q_values, np.repeat(10,q_values.shape[0])]
+            return self.history_node.children, None, np.c_[q_values, np.repeat(10, q_values.shape[0])]
+        print(f'Empty Q-value table, iteration{iteration_number}')
         self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution)
         iteration_times = []
         depth_statistics = []
