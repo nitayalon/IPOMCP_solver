@@ -49,6 +49,7 @@ class Config(object):
         os.makedirs(simulation_results_dir, exist_ok=True)
         os.makedirs(beliefs_dir, exist_ok=True)
         os.makedirs(q_values_results_dir, exist_ok=True)
+        os.makedirs(memoization_dir, exist_ok=True)
         return planning_results_dir, simulation_results_dir, beliefs_dir, q_values_results_dir, memoization_dir
 
     def get_agent_tom_level(self, role):
