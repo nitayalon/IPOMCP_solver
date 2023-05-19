@@ -27,16 +27,13 @@ class Config(object):
         path_prefix = self.get_from_general("results_folder")
         duration = self.get_from_env("n_trials")
         duration = "long_duration" if duration == 20 else "short_duration"
-        single_rational_agents = self.get_from_general("single_rational")
+        number_of_rational_agents = self.get_from_general("number_of_rational_agents")
         sender_tom = self.args.sender_tom
         receiver_tom = self.args.receiver_tom
         environment_name = f'{receiver_tom}_receiver_{sender_tom}_sender_softmax_temp_{self.args.softmax_temp}'
         which_senders = self._infer_senders_types()
         self.environment_name = f'{environment_name}_{which_senders}'
-        if single_rational_agents:
-            experiment_path = os.path.join(str(path_prefix), self.env, 'single_rational_agent')
-        else:
-            experiment_path = os.path.join(str(path_prefix), self.env, duration)
+        experiment_path = os.path.join(str(path_prefix), self.env, f'{number_of_rational_agents}_rational_agents', duration)
         general_path = os.path.join(experiment_path, f'{environment_name}_{which_senders}')
         # Export MCTS trees
         planning_results_dir = os.path.join(str(general_path), 'planning_results')
