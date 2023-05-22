@@ -8,6 +8,7 @@ import time
 class IPOMCP:
 
     def __init__(self,
+                 agent_dom_level: int,
                  root_sampling: BeliefDistribution,
                  environment_simulator: EnvironmentModel,
                  memoization_table: Optional[MemoizationTable],
@@ -37,10 +38,17 @@ class IPOMCP:
         self.action_node = None
         self.exploration_bonus = float(self.config.get_from_env("uct_exploration_bonus"))
         self.depth = float(self.config.get_from_env("planning_depth"))
-        self.n_iterations = int(self.config.get_from_env("mcts_number_of_iterations"))
+        self.n_iterations = self.compute_number_of_planning_iterations(
+            int(self.config.get_from_env("mcts_number_of_iterations")), agent_dom_level)
         self.discount_factor = float(self.config.get_from_env("discount_factor"))
         self.softmax_temperature = float(self.config.softmax_temperature)
         self.name = "IPOMCP"
+
+    @staticmethod
+    def compute_number_of_planning_iterations(number_of_iterations, agent_dom_level):
+        if agent_dom_level == 2:
+            return number_of_iterations // 2
+        return number_of_iterations
 
     def reset(self):
         self.history_node = None
