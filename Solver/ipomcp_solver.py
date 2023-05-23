@@ -66,6 +66,7 @@ class IPOMCP:
         """
         action_length = len(self.root_sampling.history.actions)
         observation_length = len(self.root_sampling.history.observations)
+        current_opponent_persona = self.environment_simulator.get_persona()
         if self.action_node is None or str(counter_offer) not in self.action_node.children:
             previous_counter_offer = self.root_sampling.history.get_last_observation()
             base_node = HistoryNode(None, previous_counter_offer, 1.0, self.action_exploration_policy)
@@ -98,7 +99,7 @@ class IPOMCP:
             iteration_time = end_time - start_time
             iteration_times.append([persona, iteration_time])
             depth_statistics.append([persona, depth])
-        self.environment_simulator.reset_persona(None, action_length, observation_length,
+        self.environment_simulator.reset_persona(current_opponent_persona, action_length, observation_length,
                                                  self.root_sampling.opponent_model.belief.belief_distribution[:iteration_number+1, :])
         # Reporting iteration time
         if self.config.report_ipocmp_statistics:
@@ -181,6 +182,7 @@ class IPOMCP:
         if depth >= self.depth or iteration_number >= self.config.task_duration:
             reward = self.environment_simulator.reward_function(observation.value,
                                                                 last_action.value)
+            reward = reward * (1-self.environment_simulator.opponent_model.solver.mental_state)
             return reward, True, depth
         action, _ = self.action_exploration_policy.sample(interactive_state,
                                                           last_action.value, observation.value,

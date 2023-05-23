@@ -21,9 +21,12 @@ class TreeNode(object):
         pass
 
     def summarize_particles_distribution(self):
+        if len(self.particles) == 0:
+            return None
         particles = [x.persona for x in self.particles]
-        particles_distribution = pd.DataFrame(particles, columns=["persona"])
-        return particles_distribution["persona"].value_counts(normalize=True).reset_index()
+        persona_columns = [f'trait_{i}' for i in range(len(particles[0]))]
+        particles_distribution = pd.DataFrame(particles, columns=persona_columns)
+        return particles_distribution[persona_columns].value_counts(normalize=True).reset_index()
 
 
 class ActionNode(TreeNode):
