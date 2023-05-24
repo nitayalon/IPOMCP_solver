@@ -182,8 +182,10 @@ class IPOMCP:
         if depth >= self.depth or iteration_number >= self.config.task_duration:
             reward = self.environment_simulator.reward_function(observation.value,
                                                                 last_action.value)
+            # We can expect to get this reward if the opponent isn't angry with us
             reward = reward * (1-self.environment_simulator.opponent_model.solver.mental_state)
-            return reward, True, depth
+            total_reward = reward * max(self.config.task_duration - iteration_number, 1)
+            return total_reward, True, depth
         action, _ = self.action_exploration_policy.sample(interactive_state,
                                                           last_action.value, observation.value,
                                                           iteration_number)
