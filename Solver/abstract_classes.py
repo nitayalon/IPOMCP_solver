@@ -151,3 +151,7 @@ class EnvironmentModel:
     @abstractmethod
     def update_persona(self, observation: Action, action: Action, iteration_number: Optional[int]):
         pass
+
+    @abstractmethod
+    def compute_future_values(self, value, value1, iteration_number, duration):
+        pass
