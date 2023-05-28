@@ -143,7 +143,7 @@ class IPOMCP:
             self.environment_simulator.step(interactive_state,
                                             action_node.action,
                                             history_node.observation,
-                                            seed, iteration_number + 1)
+                                            seed, iteration_number + 1, history_node.parent.action)
         history_node.update_reward(action_node.action, reward)
         new_observation_flag = True
         if str(observation.value) in action_node.children:
@@ -190,12 +190,13 @@ class IPOMCP:
             reward = self._halting_action_reward(action, observation.value)
             return reward, True, depth
         new_interactive_state, observation, reward, observation_probability = \
-            self.environment_simulator.step(interactive_state, action, observation, seed, iteration_number + 1)
+            self.environment_simulator.step(interactive_state, action, observation, seed, iteration_number + 1,
+                                            last_action)
         if observation.is_terminal:
             return reward, observation.is_terminal, depth
         else:
-            future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state, action, observation, depth + 1,
-                                                             seed, iteration_number + 1)
+            future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state, action, observation,
+                                                             depth + 1, seed, iteration_number + 1)
         total = reward + self.discount_factor * future_reward
         return total, observation.is_terminal, depth
 
@@ -229,7 +230,8 @@ class IPOMCP:
     def extract_max_q_value_trajectory(self, root_node: HistoryNode, planning_tree=None, belief_tree=None):
         if planning_tree is None or belief_tree is None:
             tree = [["root", None, root_node.id, root_node.parent.action.value, root_node.observation.value, 0.0]]
-            beliefs = [["root", None, root_node.id,  root_node.summarize_particles_distribution()]]
+            beliefs = [["root", None, root_node.id, root_node.compute_persona_distribution(),
+                        root_node.compute_nested_belief_distribution()]]
         else:
             tree = planning_tree
             beliefs = belief_tree
@@ -238,7 +240,8 @@ class IPOMCP:
         tree.append(["action", root_node.id, optimal_child.id, optimal_child.parent.observation.value,
                      optimal_child.action.value, 1.0, optimal_child.q_value])
         beliefs.append(["action", root_node.id, optimal_child.id, optimal_child.parent.observation.value,
-                     optimal_child.action.value, 1.0, optimal_child.summarize_particles_distribution()])
+                        optimal_child.action.value, 1.0, optimal_child.compute_persona_distribution(),
+                        root_node.compute_nested_belief_distribution()])
         tree, beliefs = self.extract_max_value_trajectory(optimal_child, tree, beliefs)
         return tree, beliefs
 
@@ -252,7 +255,8 @@ class IPOMCP:
                     child.probability,
                     child.compute_node_value()]
             beliefs = ["observation", root_node.id, child.id, child.parent.action.value,
-                       child.observation.value, root_node.summarize_particles_distribution()]
+                       child.observation.value, root_node.compute_persona_distribution(),
+                       root_node.compute_nested_belief_distribution()]
             planning_tree.append(node)
             beliefs_tree.append(beliefs)
             planning_tree, beliefs_tree = self.extract_max_q_value_trajectory(child, planning_tree, beliefs_tree)

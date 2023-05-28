@@ -145,7 +145,7 @@ class EnvironmentModel:
 
     @abstractmethod
     def step(self, interactive_state: InteractiveState, action: Action, observation: Action, seed: int,
-             iteration_number: int):
+             iteration_number: int, *args):
         pass
 
     @abstractmethod

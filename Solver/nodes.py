@@ -1,6 +1,5 @@
 from typing import Callable, Union
 import uuid
-import numpy as np
 import numpy.random as npr
 import pandas as pd
 
@@ -20,13 +19,18 @@ class TreeNode(object):
     def export_tree_to_json(self):
         pass
 
-    def summarize_particles_distribution(self):
+    def compute_persona_distribution(self):
         if len(self.particles) == 0:
             return None
-        particles = [x.persona for x in self.particles]
-        persona_columns = [f'trait_{i}' for i in range(len(particles[0]))]
-        particles_distribution = pd.DataFrame(particles, columns=persona_columns)
-        return particles_distribution[persona_columns].value_counts(normalize=True).reset_index()
+        persona = [x.persona for x in self.particles]
+        persona_columns = [f'trait_{i}' for i in range(len(persona[0]))]
+        persona_distribution = pd.DataFrame(persona, columns=persona_columns)
+        return persona_distribution[persona_columns].value_counts(normalize=True).reset_index()
+
+    def compute_nested_belief_distribution(self):
+        beliefs = [x.opponent_belief for x in self.particles]
+        beliefs_distribution = pd.DataFrame(beliefs)
+        return beliefs_distribution
 
 
 class ActionNode(TreeNode):
@@ -109,7 +113,10 @@ class HistoryNode(TreeNode):
         return None
 
     def init_q_value(self):
-        exploration_reward = self.exploration_policy.init_q_values(self.observation)
+        if self.parent is not None:
+            exploration_reward = self.exploration_policy.init_q_values(self.observation, self.parent.particles)
+        else:
+            exploration_reward = self.exploration_policy.init_q_values(self.observation)
         return exploration_reward
 
     def update_reward(self, action, reward):
