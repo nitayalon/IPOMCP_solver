@@ -50,7 +50,7 @@ class IPOMCP:
             return number_of_iterations // 2
         return number_of_iterations
 
-    def reset(self):
+    def reset(self, iteration_number: int):
         self.history_node = None
         self.action_node = None
 
