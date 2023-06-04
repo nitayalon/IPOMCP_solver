@@ -140,11 +140,10 @@ class IPOMCP:
             return self._halting_action_reward(action_node.action, history_node.observation.value), True, depth
 
         new_interactive_state, observation, reward, observation_probability = \
-            self.environment_simulator.step(interactive_state,
-                                            action_node.action,
-                                            history_node.observation,
-                                            seed, iteration_number + 1,
-                                            history_node.parent.action)
+            self.environment_simulator.step(history_node,
+                                            action_node,
+                                            interactive_state,
+                                            seed, iteration_number + 1)
         history_node.update_reward(action_node.action, reward)
         new_observation_flag = True
         if str(observation.value) in action_node.children:
@@ -191,8 +190,8 @@ class IPOMCP:
             reward = self._halting_action_reward(action, observation.value)
             return reward, True, depth
         new_interactive_state, observation, reward, observation_probability = \
-            self.environment_simulator.step(interactive_state, action, observation, seed, iteration_number + 1,
-                                            last_action)
+            self.environment_simulator.rollout_step(interactive_state, action, observation, seed, iteration_number + 1,
+                                                    last_action)
         if observation.is_terminal:
             return reward, observation.is_terminal, depth
         else:

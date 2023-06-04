@@ -40,7 +40,14 @@ class ActionNode(TreeNode):
         self.action = action
         self.is_terminal = is_terminal
         self.deterministic_q_value = deterministic_q_value
+        self.opponent_response = dict()
         super().__init__(parent)
+
+    def __str__(self):
+        return str(self.action)
+
+    def add_opponent_response(self, key, q_values, probabilities):
+        self.opponent_response[key] = [q_values, probabilities]
 
     def append_particle(self, interactive_state: InteractiveState):
         self.particles.append(interactive_state)
@@ -73,9 +80,6 @@ class ActionNode(TreeNode):
                                    is_terminal=is_terminal)
         self.children[str(history_node.observation)] = history_node
         return history_node
-
-    def __str__(self):
-        return str(self.action)
 
 
 class HistoryNode(TreeNode):

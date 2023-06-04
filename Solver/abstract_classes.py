@@ -132,7 +132,7 @@ class BeliefDistribution(ABC):
         pass
 
 
-class EnvironmentModel:
+class EnvironmentModel(ABC):
 
     def __init__(self, opponent_model=None, belief_distribution=None):
         self.opponent_model = opponent_model
@@ -144,8 +144,13 @@ class EnvironmentModel:
         pass
 
     @abstractmethod
-    def step(self, interactive_state: InteractiveState, action: Action, observation: Action, seed: int,
-             iteration_number: int, *args):
+    def step(self, history_node, action_node, interactive_state: InteractiveState,  seed: int, iteration_number: int,
+             *args):
+        pass
+
+    @abstractmethod
+    def rollout_step(self, interactive_state: InteractiveState, action: Action, observation: Action, seed: int,
+                     iteration_number: int, *args):
         pass
 
     @abstractmethod
