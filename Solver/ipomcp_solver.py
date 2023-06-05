@@ -164,12 +164,18 @@ class IPOMCP:
 
         if new_observation_flag:
             action_node.children[str(new_history_node.observation)] = new_history_node
-            future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state,
-                                                             action_node.action, observation, depth + 1,
-                                                             seed, iteration_number + 1)
+            if interactive_state.persona[1]:
+                future_reward = 0.0
+            else:
+                future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state,
+                                                                 action_node.action, observation, depth + 1,
+                                                                 seed, iteration_number + 1)
         else:
-            future_reward, is_terminal, depth = self.simulate(trail_number, new_interactive_state, new_history_node,
-                                                              depth + 1, seed, iteration_number + 1)
+            if interactive_state.persona[1]:
+                future_reward = 0.0
+            else:
+                future_reward, is_terminal, depth = self.simulate(trail_number, new_interactive_state, new_history_node,
+                                                                  depth + 1, seed, iteration_number + 1)
         total = reward + self.discount_factor * future_reward
         history_node.increment_visited()
         action_node.increment_visited()
@@ -195,8 +201,11 @@ class IPOMCP:
         if observation.is_terminal:
             return reward, observation.is_terminal, depth
         else:
-            future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state, action, observation,
-                                                             depth + 1, seed, iteration_number + 1)
+            if interactive_state.persona[1]:
+                future_reward = 0.0
+            else:
+                future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state, action, observation,
+                                                                 depth + 1, seed, iteration_number + 1)
         total = reward + self.discount_factor * future_reward
         return total, observation.is_terminal, depth
 
