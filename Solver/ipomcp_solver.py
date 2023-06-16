@@ -20,7 +20,7 @@ class IPOMCP:
 
         :param root_sampling: Generative model for sampling root IS particles
         :param environment_simulator: Generative model for simulating environment dynamics
-        :param memoization_table: Q-values memoization table for querying
+        :param memoization_table: Q-values memoization data for querying
         :param exploration_policy: An exploration policy class
         :param reward_function: reward function for computation of accept value
         :param planning_parameters: dict, additional parameters for planning
@@ -82,7 +82,7 @@ class IPOMCP:
         q_values = self.memoization_table.query_table(query_parameters)
         if not q_values.empty:
             return self.history_node.children, None, np.c_[q_values, np.repeat(10, q_values.shape[0])]
-        print(f'Empty Q-value table, iteration: {iteration_number}')
+        print(f'Empty Q-value data, iteration: {iteration_number}')
         self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution)
         iteration_times = []
         depth_statistics = []
