@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 import numpy as np
 
 
@@ -107,19 +107,22 @@ class BeliefDistribution(ABC):
     Samples root particles from the current history
     """
 
-    def __init__(self, support, prior_belief, opponent_model, history: History):
+    def __init__(self, support: Union[np.array, None], prior_belief: np.array, opponent_model, history: History):
         self.support = support
-        self.prior_belief = np.array([prior_belief])
+        self.prior_belief = prior_belief
         self.opponent_model = opponent_model
         self.history = history
         self.belief_distribution = self.prior_belief
 
+    @abstractmethod
     def reset(self):
         self.belief_distribution = self.prior_belief
 
+    @abstractmethod
     def reset_prior(self):
         self.belief_distribution = self.prior_belief
 
+    @abstractmethod
     def get_current_belief(self):
         return self.belief_distribution
 
