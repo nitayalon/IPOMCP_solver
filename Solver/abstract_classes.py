@@ -109,7 +109,7 @@ class BeliefDistribution(ABC):
 
     def __init__(self, support: Union[np.array, None], prior_belief: np.array, opponent_model, history: History):
         self.support = support
-        self.prior_belief = prior_belief
+        self.prior_belief = np.array([prior_belief])
         self.opponent_model = opponent_model
         self.history = history
         self.belief_distribution = self.prior_belief
