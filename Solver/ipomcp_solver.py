@@ -77,8 +77,9 @@ class IPOMCP:
         self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         # Check if we already have Q-values for this setting:
-        query_parameters = {'trial': iteration_number, 'threshold': self.planning_parameters['threshold'],
-                            'belief': self.root_sampling.belief_distribution}
+        query_parameters = {'trial': iteration_number,
+                            'threshold': self.planning_parameters['threshold'],
+                            'belief': self.root_sampling.belief_distribution[-1, :]}
         q_values = self.memoization_table.query_table(query_parameters)
         if not q_values.empty:
             return self.history_node.children, None, np.c_[q_values, np.repeat(10, q_values.shape[0])]
