@@ -143,7 +143,7 @@ class EnvironmentModel(ABC):
         self.reward_function = None
 
     @abstractmethod
-    def reset_persona(self, persona, action_length, observation_length, nested_beliefs):
+    def reset_persona(self, persona, action_length, observation_length, nested_beliefs, iteration_number):
         pass
 
     @abstractmethod
