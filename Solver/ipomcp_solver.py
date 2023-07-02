@@ -80,7 +80,7 @@ class IPOMCP:
         # Check if we already have Q-values for this setting:
         query_parameters = {'trial': iteration_number,
                             'threshold': self.planning_parameters['threshold'],
-                            'belief': self.root_sampling.belief_distribution[-1, :]}
+                            'belief': self.root_sampling.belief_distribution}
         q_values = self.memoization_table.query_table(query_parameters)
         if not q_values.empty:
             return self.history_node.children, None, np.c_[q_values, np.repeat(10, q_values.shape[0])]
@@ -147,7 +147,7 @@ class IPOMCP:
             self.environment_simulator.step(history_node,
                                             action_node,
                                             interactive_state,
-                                            seed, iteration_number + 1)
+                                            seed, self.environment_simulator.compute_iteration(iteration_number))
         history_node.update_reward(action_node.action, reward)
         new_observation_flag = True
         if str(observation.value) in action_node.children:
