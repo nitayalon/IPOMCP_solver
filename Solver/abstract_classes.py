@@ -30,9 +30,16 @@ class State:
         self.terminal = terminal
 
 
+class Persona:
+
+    def __init__(self, persona: list, q_values: Optional[np.array]):
+        self.persona = persona
+        self.q_values = q_values
+
+
 class InteractiveState:
 
-    def __init__(self, state: Optional[State], persona, opponent_belief):
+    def __init__(self, state: Optional[State], persona: Persona, opponent_belief):
         """
 
         :param state: State, indicating the state of the game
@@ -43,30 +50,24 @@ class InteractiveState:
         self.persona = persona
         self.opponent_belief = opponent_belief
 
+    def __str__(self):
+        return str(self.persona.persona[0])+"-"+str(self.persona.persona[1])
+
     @property
     def get_state(self):
         return self.state
 
     @property
     def get_persona(self):
-        return self.persona
+        return self.persona.persona
 
     @property
-    def get_belief(self):
-        return self.opponent_belief
+    def get_q_values(self):
+        return self.persona.q_values
 
     @property
     def get_nested_belief(self):
         return self.opponent_belief
-
-    @property
-    def sample_from_opponent_belief(self):
-        if self.opponent_belief is None:
-            return None
-        return self.opponent_belief.sample()
-
-    def update_nested_belief(self, belief):
-        self.opponent_belief = belief
 
 
 class History:
@@ -162,4 +163,9 @@ class EnvironmentModel(ABC):
 
     @abstractmethod
     def compute_future_values(self, value, value1, iteration_number, duration):
+        pass
+
+    @abstractmethod
+    def step_from_is(self, new_interactive_state: InteractiveState, previous_observation: Action, action: Action,
+                     seed: int):
         pass

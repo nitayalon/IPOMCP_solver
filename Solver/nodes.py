@@ -14,7 +14,7 @@ class TreeNode(object):
         self.id = uuid.uuid1()
         self.children = {}
         self.config = get_config()
-        self.particles = []
+        self.particles = {}
 
     def export_tree_to_json(self):
         pass
@@ -22,7 +22,7 @@ class TreeNode(object):
     def compute_persona_distribution(self):
         if len(self.particles) == 0:
             return None
-        persona = [x.persona for x in self.particles]
+        persona = [x.persona for x in self.particles.values()]
         persona_columns = [f'trait_{i}' for i in range(len(persona[0]))]
         persona_distribution = pd.DataFrame(persona, columns=persona_columns)
         return persona_distribution[persona_columns].value_counts(normalize=True).reset_index()
@@ -50,7 +50,7 @@ class ActionNode(TreeNode):
         self.opponent_response[key] = [q_values, probabilities]
 
     def append_particle(self, interactive_state: InteractiveState):
-        self.particles.append(interactive_state)
+        self.particles[str(interactive_state)] = interactive_state
 
     @property
     def q_value(self):
@@ -123,8 +123,8 @@ class HistoryNode(TreeNode):
             exploration_reward = self.exploration_policy.init_q_values(self.observation)
         return exploration_reward
 
-    def update_reward(self, action, reward):
-        self.rewards.append([action, reward])
+    def update_reward(self, action, reward, probability):
+        self.rewards.append([action, reward, probability])
 
     @property
     def previous_observation(self) -> Action:
@@ -193,5 +193,12 @@ class HistoryNode(TreeNode):
     def __str__(self):
         return str(self.observation)
 
-    def compute_node_value(self):
+    def node_value(self):
         return np.mean(self.children_qvalues[:, 1])
+
+    def action_advantage(self):
+        return self.children_qvalues[:, 1] - np.mean(self.children_qvalues[:, 1])
+
+    def reward_value(self):
+        weighted_rewards = [x[1] * x[2] for x in self.rewards]
+        return np.mean(weighted_rewards)

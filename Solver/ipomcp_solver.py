@@ -89,12 +89,12 @@ class IPOMCP:
         iteration_times = []
         depth_statistics = []
         for i in range(self.n_iterations):
-            persona = root_samples[i]
+            persona = Persona(root_samples[i], None)
             self.environment_simulator.reset_persona(persona, action_length, observation_length,
                                                      self.root_sampling.opponent_model.belief.belief_distribution,
                                                      iteration_number)
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
-            interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)
+            interactive_state = InteractiveState(State(str(iteration_number), False), persona, nested_belief)
             self.history_node.particles.append(interactive_state)
             start_time = time.time()
             _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, iteration_number)
@@ -132,23 +132,33 @@ class IPOMCP:
                                                  history_node.parent.action,
                                                  history_node.observation,
                                                  True, iteration_number)
+
         if depth >= self.depth or iteration_number >= self.config.task_duration:
             reward = self.environment_simulator.reward_function(history_node.observation.value,
                                                                 action_node.action.value)
             return reward, True, depth
-        action_node.append_particle(interactive_state)
         # If the selected action is terminal
         if action_node.action.is_terminal:
             history_node.increment_visited()
             action_node.increment_visited()
             return self._halting_action_reward(action_node.action, history_node.observation.value), True, depth
 
-        new_interactive_state, observation, reward, observation_probability = \
-            self.environment_simulator.step(history_node,
-                                            action_node,
-                                            interactive_state,
-                                            seed, self.environment_simulator.compute_iteration(iteration_number))
-        history_node.update_reward(action_node.action, reward)
+        # If we already expanded this action in this history we resample from interactive state:
+        if str(interactive_state) in action_node.particles.keys():
+            new_interactive_state = action_node.particles[str(interactive_state)]
+            observation, reward, observation_probability = \
+                self.environment_simulator.step_from_is(new_interactive_state, history_node.observation,
+                                                        action_node.action, seed)
+        else:
+            new_interactive_state, observation, reward, observation_probability = \
+                self.environment_simulator.step(history_node,
+                                                action_node,
+                                                interactive_state,
+                                                seed, self.environment_simulator.compute_iteration(iteration_number))
+            # Adding the particle to the action node
+            action_node.append_particle(new_interactive_state)
+
+        history_node.update_reward(action_node.action, reward, observation_probability)
         new_observation_flag = True
         if str(observation.value) in action_node.children:
             new_observation_flag = False
@@ -157,8 +167,6 @@ class IPOMCP:
             new_history_node = action_node.add_history_node(observation, observation_probability,
                                                             self.action_exploration_policy,
                                                             is_terminal=observation.is_terminal)
-        new_history_node.particles.append(interactive_state)
-
         if observation.is_terminal:
             history_node.increment_visited()
             action_node.increment_visited()
@@ -168,14 +176,14 @@ class IPOMCP:
 
         if new_observation_flag:
             action_node.children[str(new_history_node.observation)] = new_history_node
-            if interactive_state.persona[1]:
+            if interactive_state.persona.persona[1]:
                 future_reward = 0.0
             else:
                 future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state,
                                                                  action_node.action, observation, depth + 1,
                                                                  seed, iteration_number + 1)
         else:
-            if interactive_state.persona[1]:
+            if interactive_state.persona.persona[1]:
                 future_reward = 0.0
             else:
                 future_reward, is_terminal, depth = self.simulate(trail_number, new_interactive_state, new_history_node,
@@ -205,7 +213,7 @@ class IPOMCP:
         if observation.is_terminal:
             return reward, observation.is_terminal, depth
         else:
-            if interactive_state.persona[1]:
+            if interactive_state.persona.persona[1]:
                 future_reward = 0.0
             else:
                 future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state, action, observation,
@@ -266,7 +274,7 @@ class IPOMCP:
                     child.parent.action.value,
                     child.observation.value,
                     child.probability,
-                    child.compute_node_value()]
+                    child.node_value()]
             beliefs = ["observation", root_node.id, child.id, child.parent.action.value,
                        child.observation.value, root_node.compute_persona_distribution(),
                        root_node.compute_nested_belief_distribution()]
