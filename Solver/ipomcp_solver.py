@@ -73,9 +73,11 @@ class IPOMCP:
             base_node = HistoryNode(None, previous_counter_offer, 1.0, self.action_exploration_policy)
             offer_node = base_node.add_action_node(offer)
             self.history_node = offer_node.add_history_node(counter_offer, 1.0, self.action_exploration_policy)
+            self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
         else:
             self.history_node = self.action_node.children[str(counter_offer)]
-        self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
+            self.root_sampling.update_distribution_from_particles(self.history_node.particles, offer, counter_offer,
+                                                                  iteration_number)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         # Check if we already have Q-values for this setting:
         query_parameters = {'trial': iteration_number,
@@ -95,7 +97,6 @@ class IPOMCP:
                                                      iteration_number)
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
             interactive_state = InteractiveState(State(str(iteration_number), False), persona, nested_belief)
-            self.history_node.particles.append(interactive_state)
             start_time = time.time()
             _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, iteration_number)
             end_time = time.time()
@@ -137,12 +138,14 @@ class IPOMCP:
             reward = self.environment_simulator.reward_function(history_node.observation.value,
                                                                 action_node.action.value)
             return reward, True, depth
+
         # If the selected action is terminal
         if action_node.action.is_terminal:
             history_node.increment_visited()
             action_node.increment_visited()
             return self._halting_action_reward(action_node.action, history_node.observation.value), True, depth
 
+        # Since the nested beliefs are deterministic given the action:
         # If we already expanded this action in this history we resample from interactive state:
         if str(interactive_state) in action_node.particles.keys():
             new_interactive_state = action_node.particles[str(interactive_state)]
@@ -155,9 +158,8 @@ class IPOMCP:
                                                 action_node,
                                                 interactive_state,
                                                 seed, self.environment_simulator.compute_iteration(iteration_number))
-            # Adding the particle to the action node
             action_node.append_particle(new_interactive_state)
-
+        # Update reward for interactive state: R(is)
         history_node.update_reward(action_node.action, reward, observation_probability)
         new_observation_flag = True
         if str(observation.value) in action_node.children:
@@ -167,6 +169,8 @@ class IPOMCP:
             new_history_node = action_node.add_history_node(observation, observation_probability,
                                                             self.action_exploration_policy,
                                                             is_terminal=observation.is_terminal)
+        # Append the new interactive state to the history node for PF
+        new_history_node.append_particle(new_interactive_state, observation_probability)
         if observation.is_terminal:
             history_node.increment_visited()
             action_node.increment_visited()

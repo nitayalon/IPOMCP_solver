@@ -135,6 +135,9 @@ class BeliefDistribution(ABC):
     def sample(self, rng_key, n_samples):
         pass
 
+    def update_distribution_from_particles(self, particles, action, observation, iteration_number):
+        pass
+
 
 class EnvironmentModel(ABC):
 

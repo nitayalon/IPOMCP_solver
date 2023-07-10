@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Callable
 import uuid
 import numpy.random as npr
 import pandas as pd
@@ -99,6 +99,7 @@ class HistoryNode(TreeNode):
         self.is_terminal = is_terminal
         self.init_node()
         self.rewards = []
+        self.particles = {}
 
     def init_node(self):
         self.particles = []
@@ -202,3 +203,9 @@ class HistoryNode(TreeNode):
     def reward_value(self):
         weighted_rewards = [x[1] * x[2] for x in self.rewards]
         return np.mean(weighted_rewards)
+
+    def append_particle(self, interactive_state: InteractiveState, observation_probability: float):
+        if str(interactive_state) in self.particles.keys():
+            self.particles[str(interactive_state)].append([interactive_state, observation_probability])
+        else:
+            self.particles[str(interactive_state)] = [[interactive_state, observation_probability]]
