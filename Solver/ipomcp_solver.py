@@ -91,7 +91,7 @@ class IPOMCP:
         self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution)
         iteration_times = []
         depth_statistics = []
-        for i in tqdm(range(self.n_iterations)):
+        for i in tqdm(range(self.n_iterations), position=0, leave=True):
             persona = Persona(root_samples[i], None)
             self.environment_simulator.reset_persona(persona, action_length, observation_length,
                                                      self.root_sampling.opponent_model.belief.belief_distribution,
