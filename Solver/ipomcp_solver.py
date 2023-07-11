@@ -3,6 +3,7 @@ from IPOMCP_solver.Solver.abstract_classes import *
 from IPOMCP_solver.Solver.ipomcp_config import get_config
 from IPOMCP_solver.utils.memoization_table import MemoizationTable
 import time
+from tqdm import tqdm
 
 
 class IPOMCP:
@@ -90,7 +91,7 @@ class IPOMCP:
         self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution)
         iteration_times = []
         depth_statistics = []
-        for i in range(self.n_iterations):
+        for i in tqdm(range(self.n_iterations)):
             persona = Persona(root_samples[i], None)
             self.environment_simulator.reset_persona(persona, action_length, observation_length,
                                                      self.root_sampling.opponent_model.belief.belief_distribution,
