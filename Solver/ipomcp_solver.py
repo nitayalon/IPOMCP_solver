@@ -3,20 +3,20 @@ from IPOMCP_solver.Solver.abstract_classes import *
 from IPOMCP_solver.Solver.ipomcp_config import get_config
 from IPOMCP_solver.utils.memoization_table import MemoizationTable
 import time
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 class IPOMCP:
 
     def __init__(self,
-                 agent_dom_level: int,
                  root_sampling: BeliefDistribution,
                  environment_simulator: EnvironmentModel,
                  memoization_table: Optional[MemoizationTable],
                  exploration_policy,
                  reward_function,
                  planning_parameters: dict,
-                 seed: int):
+                 seed: int,
+                 nested_model=False):
         """
 
         :param root_sampling: Generative model for sampling root IS particles
@@ -38,18 +38,18 @@ class IPOMCP:
         self.history_node = None
         self.action_node = None
         self.exploration_bonus = float(self.config.get_from_env("uct_exploration_bonus"))
-        self.depth = float(self.config.get_from_env("planning_depth"))
+        self.depth = self.compute_planning_horizon(nested_model)
         self.n_iterations = self.compute_number_of_planning_iterations(
-            int(self.config.get_from_env("mcts_number_of_iterations")), agent_dom_level)
+            int(self.config.get_from_env("mcts_number_of_iterations")), nested_model)
         self.discount_factor = float(self.config.get_from_env("discount_factor"))
         self.softmax_temperature = float(self.config.softmax_temperature)
         self.name = "IPOMCP"
         self.x_ipomdp_model = False
 
     @staticmethod
-    def compute_number_of_planning_iterations(number_of_iterations, agent_dom_level):
-        if agent_dom_level == 2:
-            return number_of_iterations // 2
+    def compute_number_of_planning_iterations(number_of_iterations, nested_model):
+        if nested_model:
+            return 10000
         return number_of_iterations
 
     def reset(self, iteration_number: int):
@@ -287,6 +287,11 @@ class IPOMCP:
             beliefs_tree.append(beliefs)
             planning_tree, beliefs_tree = self.extract_max_q_value_trajectory(child, planning_tree, beliefs_tree)
         return planning_tree, beliefs_tree
+
+    def compute_planning_horizon(self, nested):
+        if nested:
+            return float(int(self.config.get_from_env("planning_depth")) / 2)
+        return float(self.config.get_from_env("planning_depth"))
 
 
 
