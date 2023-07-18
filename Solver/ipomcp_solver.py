@@ -243,16 +243,6 @@ class IPOMCP:
         reward = self.reward_function(final_offer)
         return reward
 
-    # def plot_max_value_trajectory(self, root_node: HistoryNode):
-    #     planning_tree = self.extract_max_q_value_trajectory(root_node)
-    #     g = nx.DiGraph()
-    #     g.add_nodes_from(list(planning_tree.keys()))
-    #     g.add_edges_from(zip(planning_tree.keys(), [x[0] for x in planning_tree.values()]))
-    #     nx.draw(g, with_labels=True)
-    #     plt.draw()
-    #     plt.show()
-    #     return planning_tree
-    #
     def extract_max_q_value_trajectory(self, root_node: HistoryNode, planning_tree=None, belief_tree=None):
         if planning_tree is None or belief_tree is None:
             tree = [["root", None, root_node.id, root_node.parent.action.value, root_node.observation.value, 0.0]]
