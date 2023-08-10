@@ -38,6 +38,7 @@ class IPOMCP:
         self.history_node = None
         self.action_node = None
         self.exploration_bonus = float(self.config.get_from_env("uct_exploration_bonus"))
+        self.nested_model = nested_model
         self.depth = self.compute_planning_horizon(nested_model)
         self.n_iterations = self.compute_number_of_planning_iterations(
             int(self.config.get_from_env("mcts_number_of_iterations")), nested_model)
@@ -91,7 +92,8 @@ class IPOMCP:
         self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution)
         iteration_times = []
         depth_statistics = []
-        for i in tqdm(range(self.n_iterations), disable=self.config.disable_print_loop):
+        disable_printing = self.config.disable_print_loop or self.nested_model
+        for i in tqdm(range(self.n_iterations), disable=disable_printing):
             persona = Persona(root_samples[i], None)
             self.environment_simulator.reset_persona(persona, action_length, observation_length,
                                                      self.root_sampling.opponent_model.belief.belief_distribution,
