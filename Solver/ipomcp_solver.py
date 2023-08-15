@@ -43,7 +43,7 @@ class IPOMCP:
         self.discount_factor = float(self.config.get_from_env("discount_factor"))
         self.softmax_temperature = float(self.config.softmax_temperature)
         self.name = "IPOMCP"
-        self.x_ipomdp_model = False
+        self.x_ipomdp_model = bool(self.config.get_from_env("x_ipomdp_awareness"))
 
     @staticmethod
     def compute_number_of_planning_iterations(number_of_iterations, agent_dom_level):
