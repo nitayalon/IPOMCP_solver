@@ -91,7 +91,8 @@ class IPOMCP:
         for i in range(self.n_iterations):
             persona = root_samples[i]
             self.environment_simulator.reset_persona(persona, action_length, observation_length,
-                                                     self.root_sampling.opponent_model.belief.belief_distribution)
+                                                     self.root_sampling.opponent_model.belief.belief_distribution,
+                                                     iteration_number)
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
             interactive_state = InteractiveState(State(str(i), False), persona, nested_belief)
             self.history_node.particles.append(interactive_state)
