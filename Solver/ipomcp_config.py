@@ -14,6 +14,7 @@ class Config(object):
         self.game_params = None
         self.environment_name = None
         self.experiment_name = None
+        self.mechansim_awarness = str(self.get_from_general("x_ipomdp_awareness"))
         self.subintentional_agent_type = str(self.get_from_env("subintentional_type"))
         self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir, self.q_values_results_dir, \
         self.path_to_memoization_data = self.create_experiment_dir()
@@ -33,7 +34,8 @@ class Config(object):
         environment_name = f'{receiver_tom}_receiver_{sender_tom}_sender_softmax_temp_{self.args.softmax_temp}'
         which_senders = self._infer_senders_types()
         self.environment_name = f'{environment_name}_{which_senders}'
-        experiment_path = os.path.join(str(path_prefix), self.env, f'{number_of_rational_agents}_rational_agents', duration)
+        experiment_path = os.path.join(str(path_prefix), self.env, f'xipomdp_awarness_{self.mechansim_awarness}',
+                                       f'{number_of_rational_agents}_rational_agents', duration)
         general_path = os.path.join(experiment_path, f'{environment_name}_{which_senders}')
         # Export MCTS trees
         planning_results_dir = os.path.join(str(general_path), 'planning_results')
