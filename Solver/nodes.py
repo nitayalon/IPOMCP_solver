@@ -41,6 +41,7 @@ class ActionNode(TreeNode):
         self.is_terminal = is_terminal
         self.deterministic_q_value = deterministic_q_value
         self.opponent_response = dict()
+        self.rewards = []
         super().__init__(parent)
 
     def __str__(self):
@@ -67,6 +68,7 @@ class ActionNode(TreeNode):
     def update_q_value(self, reward):
         idx = np.where(self.parent.children_visited[:, 0] == self.action.value)
         q_value = self.q_value + (reward - self.q_value) / self.visit_counter
+        self.rewards.append(reward)
         self.parent.children_qvalues[idx, 1] = q_value
 
     def increment_visited(self):

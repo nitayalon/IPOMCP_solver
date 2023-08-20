@@ -170,7 +170,7 @@ class EnvironmentModel(ABC):
 
     @abstractmethod
     def step_from_is(self, new_interactive_state: InteractiveState, previous_observation: Action, action: Action,
-                     seed: int):
+                     seed: int, iteration_number:int):
         pass
 
     @staticmethod

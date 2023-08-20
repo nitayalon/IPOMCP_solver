@@ -154,7 +154,7 @@ class IPOMCP:
             new_interactive_state = action_node.particles[str(interactive_state)]
             observation, reward, observation_probability = \
                 self.environment_simulator.step_from_is(new_interactive_state, history_node.observation,
-                                                        action_node.action, seed)
+                                                        action_node.action, seed, iteration_number)
         else:
             new_interactive_state, observation, reward, observation_probability = \
                 self.environment_simulator.step(history_node,
