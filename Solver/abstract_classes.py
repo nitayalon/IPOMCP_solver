@@ -81,11 +81,14 @@ class History:
         self.observations = self.observations[0:observation_length]
         self.rewards = self.rewards[0:action_length]
 
-    def get_last_observation(self):
-        if len(self.observations) <= 1:
-            last_observation = Action(None, False)
+    def get_last_observation(self, nested=False):
+        if nested:
+            last_observation = self.observations[-1]
         else:
-            last_observation = self.observations[-2]
+            if len(self.observations) <= 1:
+                last_observation = Action(None, False)
+            else:
+                last_observation = self.observations[-2]
         return last_observation
 
     def update_history(self, action: Action, observation: Action, reward: Optional[float] = None):
@@ -116,8 +119,8 @@ class BeliefDistribution(ABC):
         self.belief_distribution = self.prior_belief
 
     @abstractmethod
-    def reset(self):
-        self.belief_distribution = self.prior_belief
+    def reset(self, size):
+        self.belief_distribution = self.prior_belief[:size]
 
     @abstractmethod
     def reset_prior(self):

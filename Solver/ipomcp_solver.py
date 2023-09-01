@@ -75,7 +75,8 @@ class IPOMCP:
             base_node = HistoryNode(None, previous_counter_offer, 1.0, self.action_exploration_policy)
             offer_node = base_node.add_action_node(offer)
             self.history_node = offer_node.add_history_node(counter_offer, 1.0, self.action_exploration_policy)
-            self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
+            if update_belief:
+                self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
         else:
             self.history_node = self.action_node.children[str(counter_offer)]
             self.root_sampling.update_distribution_from_particles(self.history_node.particles, offer, counter_offer,
