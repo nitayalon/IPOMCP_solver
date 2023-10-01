@@ -1,5 +1,3 @@
-import numpy as np
-
 from IPOMCP_solver.Solver.nodes import *
 from IPOMCP_solver.Solver.abstract_classes import *
 from IPOMCP_solver.Solver.ipomcp_config import get_config
@@ -18,6 +16,7 @@ class IPOMCP:
                  reward_function,
                  planning_parameters: dict,
                  seed: int,
+                 inference_level: int,
                  nested_model=False):
         """
 
@@ -41,6 +40,7 @@ class IPOMCP:
         self.action_node = None
         self.exploration_bonus = float(self.config.get_from_env("uct_exploration_bonus"))
         self.nested_model = nested_model
+        self.inference_level = inference_level
         self.depth = self.compute_planning_horizon(nested_model)
         self.n_iterations = self.compute_number_of_planning_iterations(
             int(self.config.get_from_env("mcts_number_of_iterations")), nested_model)
@@ -96,7 +96,8 @@ class IPOMCP:
         iteration_times = []
         depth_statistics = []
         disable_printing = self.config.disable_print_loop or self.nested_model
-        q_values_table = np.empty((self.n_iterations // 100, 3))
+        q_values_table = np.empty((1000, 3))
+        belief_distribution = np.array(x[0] for x in root_samples)
         for i in tqdm(range(self.n_iterations), disable=disable_printing):
             persona = Persona(root_samples[i], None)
             self.environment_simulator.reset_persona(persona, action_length, observation_length,
@@ -106,8 +107,8 @@ class IPOMCP:
             interactive_state = InteractiveState(State(str(iteration_number), False), persona, nested_belief)
             start_time = time.time()
             _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, iteration_number)
-            if not self.config.disable_print_loop and i % 100 == 0:
-                q_values_table[i // 100, :] = i, self.history_node.children_qvalues[:, 1][0], self.history_node.children_qvalues[:, 1][1]
+            if not self.config.disable_print_loop and (1000 <= i < 2000):
+                q_values_table[i - 1000, :] = i, self.history_node.children_qvalues[:, 1][0], self.history_node.children_qvalues[:, 1][1]
             end_time = time.time()
             iteration_time = end_time - start_time
             iteration_times.append([persona, iteration_time])
@@ -134,6 +135,29 @@ class IPOMCP:
                                                              'threshold': query_parameters['threshold']})
         return self.history_node.children, optimal_tree_table, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
+
+    def tree_traverse(self, iteration_number: int, action_length:int, observation_length:int,
+                      root_samples: list):
+        iteration_times = []
+        depth_statistics = []
+        disable_printing = self.config.disable_print_loop or self.nested_model
+        q_values_table = np.empty((1000, 3))
+        for i in tqdm(range(self.n_iterations), disable=disable_printing):
+            persona = Persona(root_samples[i], None)
+            self.environment_simulator.reset_persona(persona,
+                                                     action_length, observation_length,
+                                                     self.root_sampling.opponent_model.belief.belief_distribution,
+                                                     iteration_number)
+            nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
+            interactive_state = InteractiveState(State(str(iteration_number), False), persona, nested_belief)
+            start_time = time.time()
+            _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, iteration_number)
+            if not self.config.disable_print_loop and (1000 <= i < 2000):
+                q_values_table[i - 1000, :] = i, self.history_node.children_qvalues[:, 1][0], self.history_node.children_qvalues[:, 1][1]
+            end_time = time.time()
+            iteration_time = end_time - start_time
+            iteration_times.append([persona, iteration_time])
+            depth_statistics.append([persona, depth])
 
     def simulate(self, trail_number, interactive_state: InteractiveState,
                  history_node: HistoryNode, depth,
