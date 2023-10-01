@@ -1,3 +1,5 @@
+import numpy as np
+
 from IPOMCP_solver.Solver.nodes import *
 from IPOMCP_solver.Solver.abstract_classes import *
 from IPOMCP_solver.Solver.ipomcp_config import get_config
@@ -93,26 +95,26 @@ class IPOMCP:
             return self.history_node.children, None, np.c_[q_values, np.repeat(10, q_values.shape[0])]
         print(f'Empty Q-value data, iteration: {iteration_number}')
         self.action_exploration_policy.update_belief(self.root_sampling.belief_distribution)
-        iteration_times = []
-        depth_statistics = []
-        disable_printing = self.config.disable_print_loop or self.nested_model
-        q_values_table = np.empty((1000, 3))
+        # Compute belief distribution
         belief_distribution = np.array(x[0] for x in root_samples)
-        for i in tqdm(range(self.n_iterations), disable=disable_printing):
-            persona = Persona(root_samples[i], None)
-            self.environment_simulator.reset_persona(persona, action_length, observation_length,
-                                                     self.root_sampling.opponent_model.belief.belief_distribution,
-                                                     iteration_number)
-            nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
-            interactive_state = InteractiveState(State(str(iteration_number), False), persona, nested_belief)
-            start_time = time.time()
-            _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, iteration_number)
-            if not self.config.disable_print_loop and (1000 <= i < 2000):
-                q_values_table[i - 1000, :] = i, self.history_node.children_qvalues[:, 1][0], self.history_node.children_qvalues[:, 1][1]
-            end_time = time.time()
-            iteration_time = end_time - start_time
-            iteration_times.append([persona, iteration_time])
-            depth_statistics.append([persona, depth])
+        # Call to MCTS by opponent type
+        if self.inference_level == 1:
+            iteration_times, depth_statistics = self.tree_traverse(iteration_number, action_length, observation_length,
+                                                                   root_samples)
+        # DoM(2) receiver solver
+        else:
+            # Filter random sender
+            filtered_root_samples = list(filter(lambda x: x[0] > 0.0, root_samples))
+            p_random = (len(root_samples) - len(filtered_root_samples)) / len(root_samples)
+            iteration_times, depth_statistics = self.tree_traverse(iteration_number, action_length, observation_length,
+                                                                   filtered_root_samples)
+            # Q(Accept, Reject) as DoM(0):
+            immediate_reward = self.environment_simulator.reward_function(counter_offer.value, True)
+            future_discounted_reward = np.sum(np.power(self.discount_factor, np.arange(iteration_number + 1,
+                                                                                       self.config.task_duration)) * 0.5)
+            random_q_values = np.array([immediate_reward + future_discounted_reward, future_discounted_reward])
+            mixed_q_values = (1-p_random) * self.history_node.children_qvalues[:, 1] + p_random * random_q_values
+            self.history_node.children_qvalues[:, 1] = mixed_q_values
         self.environment_simulator.reset_persona(current_opponent_persona, action_length, observation_length,
                                                  self.root_sampling.opponent_model.belief.belief_distribution,
                                                  iteration_number)
@@ -142,7 +144,7 @@ class IPOMCP:
         depth_statistics = []
         disable_printing = self.config.disable_print_loop or self.nested_model
         q_values_table = np.empty((1000, 3))
-        for i in tqdm(range(self.n_iterations), disable=disable_printing):
+        for i in tqdm(range(len(root_samples)), disable=disable_printing):
             persona = Persona(root_samples[i], None)
             self.environment_simulator.reset_persona(persona,
                                                      action_length, observation_length,
@@ -158,6 +160,7 @@ class IPOMCP:
             iteration_time = end_time - start_time
             iteration_times.append([persona, iteration_time])
             depth_statistics.append([persona, depth])
+        return iteration_times, depth_statistics
 
     def simulate(self, trail_number, interactive_state: InteractiveState,
                  history_node: HistoryNode, depth,
