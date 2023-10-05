@@ -169,8 +169,8 @@ class IPOMCP:
                                                  history_node.parent.action,
                                                  history_node.observation,
                                                  True, iteration_number)
-
-        if depth >= self.depth or iteration_number >= self.config.task_duration:
+        termination_condition = depth >= self.depth or iteration_number >= self.config.task_duration
+        if termination_condition:
             reward = self.environment_simulator.reward_function(history_node.observation.value,
                                                                 action_node.action.value)
             return reward, True, depth
@@ -197,6 +197,7 @@ class IPOMCP:
             action_node.append_particle(new_interactive_state)
         # Update reward for interactive state: R(is)
         history_node.update_reward(action_node.action, reward, observation_probability)
+        last_trial = iteration_number == self.config.task_duration - 1
         new_observation_flag = True
         if str(observation.value) in action_node.children:
             new_observation_flag = False
@@ -204,7 +205,8 @@ class IPOMCP:
         else:
             new_history_node = action_node.add_history_node(observation, observation_probability,
                                                             self.action_exploration_policy,
-                                                            is_terminal=observation.is_terminal)
+                                                            is_terminal=termination_condition,
+                                                            last_trial=last_trial)
         # Append the new interactive state to the history node for PF
         new_history_node.append_particle(new_interactive_state, observation_probability)
         if observation.is_terminal:

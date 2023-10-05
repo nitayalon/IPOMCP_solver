@@ -77,9 +77,10 @@ class ActionNode(TreeNode):
 
     def add_history_node(self, observation, observation_probability,
                          action_exploration_policy,
-                         is_terminal: bool = False):
+                         is_terminal: bool = False,
+                         last_trial: bool = False) -> TreeNode:
         history_node = HistoryNode(self, observation, observation_probability, action_exploration_policy,
-                                   is_terminal=is_terminal)
+                                   is_terminal, last_trial)
         self.children[str(history_node.observation)] = history_node
         return history_node
 
@@ -91,7 +92,8 @@ class HistoryNode(TreeNode):
                  observation: Action,
                  probability: float,
                  exploration_policy,
-                 is_terminal=False):
+                 is_terminal=False,
+                 last_trial=False):
         super().__init__(parent)
 
         self.exploration_policy = exploration_policy
@@ -99,6 +101,7 @@ class HistoryNode(TreeNode):
         self.probability = probability
         self.exploration_bonus = self.config.get_from_env("uct_exploration_bonus")
         self.is_terminal = is_terminal
+        self.last_trial = last_trial
         self.init_node()
         self.rewards = []
         self.particles = {}
@@ -108,7 +111,7 @@ class HistoryNode(TreeNode):
         self.children_values = []
         self.children_visited = np.vstack((self.exploration_policy.actions,
                                            np.repeat(0, self.exploration_policy.actions.shape[0]))).T
-        self.children_qvalues = np.vstack((self.exploration_policy.actions, self.init_q_value())).T
+        self.children_qvalues = np.vstack((self.exploration_policy.actions, self.init_q_value(self.last_trial))).T
         self.visited_counter = 1
         for child in list(self.exploration_policy.actions):
             idx = np.where(list(self.exploration_policy.actions) == child)
@@ -119,11 +122,13 @@ class HistoryNode(TreeNode):
         self.children_qvalues = np.vstack((self.exploration_policy.actions, exploration_reward)).T
         return None
 
-    def init_q_value(self):
+    def init_q_value(self, last_trial:bool):
         if self.parent is not None:
             exploration_reward = self.exploration_policy.init_q_values(self.observation, self.parent.particles)
         else:
             exploration_reward = self.exploration_policy.init_q_values(self.observation)
+        if last_trial:
+            exploration_reward = np.array([self.exploration_policy.reward_function(True, self.observation.value), 0.0])
         return exploration_reward
 
     def update_reward(self, action, reward, probability):
