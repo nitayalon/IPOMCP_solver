@@ -128,7 +128,7 @@ class HistoryNode(TreeNode):
         else:
             exploration_reward = self.exploration_policy.init_q_values(self.observation)
         if last_trial:
-            exploration_reward = np.array([self.exploration_policy.reward_function(True, self.observation.value), 0.0])
+            exploration_reward = self.exploration_policy.compute_final_round_q_values(self.observation.value)
         return exploration_reward
 
     def update_reward(self, action, reward, probability):
