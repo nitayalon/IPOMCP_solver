@@ -113,18 +113,23 @@ class BeliefDistribution(ABC):
         self.opponent_model = opponent_model
         self.history = history
         self.belief_distribution = self.prior_belief
+        self.likelihood = np.ones_like(prior_belief)
 
     @abstractmethod
     def reset(self):
         self.belief_distribution = self.prior_belief
+        self.likelihood = np.ones_like(self.belief_distribution)
 
     @abstractmethod
     def reset_prior(self):
         self.belief_distribution = self.prior_belief
+        self.likelihood = np.ones_like(self.belief_distribution)
 
-    @abstractmethod
     def get_current_belief(self):
         return self.belief_distribution
+
+    def get_current_likelihood(self):
+        return self.likelihood
 
     @abstractmethod
     def update_distribution(self, action, observation, first_move):
