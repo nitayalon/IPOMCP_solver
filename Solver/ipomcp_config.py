@@ -2,6 +2,7 @@ import os
 from typing import Union
 import confuse
 import torch
+import numpy as np
 
 
 class Config(object):
@@ -14,6 +15,7 @@ class Config(object):
         self.game_params = None
         self.environment_name = None
         self.experiment_name = None
+        self.agent_actions = np.round(np.arange(0, 1.05, float(self.get_from_general("offers_step_size"))), 2)
         self.mechansim_awarness = str(self.get_from_general("aleph_ipomdp_awareness"))
         self.subintentional_agent_type = str(self.get_from_env("subintentional_type"))
         self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir, self.q_values_results_dir, \
