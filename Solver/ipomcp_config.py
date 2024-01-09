@@ -14,14 +14,14 @@ class Config(object):
         self.game_params = None
         self.environment_name = None
         self.experiment_name = None
-        self.mechansim_awarness = str(self.get_from_general("x_ipomdp_awareness"))
+        self.mechansim_awarness = str(self.get_from_general("aleph_ipomdp_awareness"))
         self.subintentional_agent_type = str(self.get_from_env("subintentional_type"))
         self.planning_results_dir, self.simulation_results_dir, self.beliefs_dir, self.q_values_results_dir, \
         self.path_to_memoization_data = self.create_experiment_dir()
         self.cuda_is_available = torch.cuda.is_available()
         torch.manual_seed(self.seed)
         self.device = torch.device("cuda" if self.cuda_is_available else "cpu")
-        self.report_ipocmp_statistics = bool(self.get_from_general("report_ipocmp_statistics"))
+        self.report_ipomcp_statistics = bool(self.get_from_general("report_ipomcp_statistics"))
         self.output_planning_tree = bool(self.get_from_general("output_planning_tree"))
         self.disable_print_loop = bool(self.get_from_general("state") == "simulation")
 
@@ -35,7 +35,7 @@ class Config(object):
         environment_name = f'{receiver_tom}_receiver_{sender_tom}_sender_softmax_temp_{self.args.softmax_temp}'
         which_senders = self._infer_senders_types()
         self.environment_name = f'{environment_name}_{which_senders}'
-        experiment_path = os.path.join(str(path_prefix), self.env, f'xipomdp_awarness_{self.mechansim_awarness}',
+        experiment_path = os.path.join(str(path_prefix), self.env, f'aleph_ipomdp_awarness_{self.mechansim_awarness}',
                                        f'{number_of_rational_agents}_rational_agents', duration)
         general_path = os.path.join(experiment_path, f'{environment_name}_{which_senders}')
         # Export MCTS trees

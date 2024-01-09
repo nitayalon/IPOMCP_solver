@@ -43,7 +43,7 @@ class IPOMCP:
         self.discount_factor = float(self.config.get_from_env("discount_factor"))
         self.softmax_temperature = float(self.config.softmax_temperature)
         self.name = "IPOMCP"
-        self.x_ipomdp_model = bool(self.config.get_from_general("x_ipomdp_awareness"))
+        self.x_ipomdp_model = bool(self.config.get_from_general("aleph_ipomdp_awareness"))
 
     @staticmethod
     def compute_number_of_planning_iterations(number_of_iterations, agent_dom_level):
@@ -107,7 +107,7 @@ class IPOMCP:
                                                  self.root_sampling.opponent_model.belief.belief_distribution,
                                                  iteration_number)
         # Reporting iteration time
-        if self.config.report_ipocmp_statistics:
+        if self.config.report_ipomcp_statistics:
             iteration_time_for_logging = pd.DataFrame(iteration_times)
             iteration_time_for_logging.columns = ["persona", "time"]
         if self.config.output_planning_tree:
