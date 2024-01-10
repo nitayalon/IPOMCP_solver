@@ -122,7 +122,7 @@ class HistoryNode(TreeNode):
         self.children_qvalues = np.vstack((self.exploration_policy.actions, exploration_reward)).T
         return None
 
-    def init_q_value(self, last_trial:bool):
+    def init_q_value(self, last_trial: bool):
         if self.parent is not None:
             exploration_reward = self.exploration_policy.init_q_values(self.observation, self.parent.particles)
         else:

@@ -20,7 +20,7 @@ class Config(object):
         self.cuda_is_available = torch.cuda.is_available()
         torch.manual_seed(self.seed)
         self.device = torch.device("cuda" if self.cuda_is_available else "cpu")
-        self.report_ipocmp_statistics = bool(self.get_from_general("report_ipocmp_statistics"))
+        self.report_ipocmp_statistics = bool(self.get_from_general("report_ipomcp_statistics"))
         self.output_planning_tree = bool(self.get_from_general("output_planning_tree"))
         self.disable_print_loop = bool(self.get_from_general("state") == "simulation")
 
