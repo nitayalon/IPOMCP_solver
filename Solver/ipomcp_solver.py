@@ -5,6 +5,7 @@ from IPOMCP_solver.utils.memoization_table import MemoizationTable
 import time
 from tqdm.auto import tqdm
 
+
 class IPOMCP:
 
     def __init__(self,
@@ -75,6 +76,8 @@ class IPOMCP:
             self.history_node = offer_node.add_history_node(counter_offer, 1.0, self.action_exploration_policy)
         else:
             self.history_node = self.action_node.children[str(counter_offer)]
+            self.root_sampling.update_distribution_from_particles(self.history_node.particles, offer, counter_offer,
+                                                                  iteration_number)
         self.root_sampling.update_distribution(offer, counter_offer, iteration_number)
         root_samples = self.root_sampling.sample(self.seed, n_samples=self.n_iterations)
         # Check if we already have Q-values for this setting:
