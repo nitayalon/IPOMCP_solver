@@ -149,7 +149,8 @@ class IPOMCP:
                                                      self.root_sampling.opponent_model.belief.belief_distribution,
                                                      iteration_number)
             nested_belief = self.environment_simulator.opponent_model.belief.get_current_belief()
-            interactive_state = InteractiveState(State(str(iteration_number), False), persona, nested_belief)
+            nested_likelihood = self.environment_simulator.opponent_model.belief.likelihood
+            interactive_state = InteractiveState(State(str(iteration_number), False), persona, nested_belief, nested_likelihood)
             start_time = time.time()
             _, _, depth = self.simulate(i, interactive_state, self.history_node, 0, self.seed, iteration_number)
             if not self.config.disable_print_loop and (1000 <= i < 2000):
@@ -216,7 +217,7 @@ class IPOMCP:
 
         if new_observation_flag:
             action_node.children[str(new_history_node.observation)] = new_history_node
-            if interactive_state.persona.persona[1]:
+            if new_interactive_state.persona.persona[1]:
                 future_reward = 0.0
             else:
                 future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state,
@@ -253,7 +254,7 @@ class IPOMCP:
         if observation.is_terminal:
             return reward, observation.is_terminal, depth
         else:
-            if interactive_state.persona.persona[1]:
+            if new_interactive_state.persona.persona[1]:
                 future_reward = 0.0
             else:
                 future_reward, is_terminal, depth = self.rollout(trail_number, new_interactive_state, action, observation,

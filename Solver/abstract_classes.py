@@ -39,7 +39,7 @@ class Persona:
 
 class InteractiveState:
 
-    def __init__(self, state: Optional[State], persona: Persona, opponent_belief):
+    def __init__(self, state: Optional[State], persona: Persona, opponent_belief, nested_likelihood=None):
         """
 
         :param state: State, indicating the state of the game
@@ -49,6 +49,7 @@ class InteractiveState:
         self.state = state
         self.persona = persona
         self.opponent_belief = opponent_belief
+        self.nested_likelihood = nested_likelihood
 
     def __str__(self):
         return str(self.persona.persona[0])+"-"+str(self.persona.persona[1])
@@ -68,6 +69,10 @@ class InteractiveState:
     @property
     def get_nested_belief(self):
         return self.opponent_belief
+
+    @property
+    def get_nested_likelihood(self):
+        return self.nested_likelihood
 
 
 class History:
