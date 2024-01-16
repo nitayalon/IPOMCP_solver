@@ -35,6 +35,7 @@ class IPOMCP:
         self.planning_parameters = planning_parameters
         self.seed = seed
         self.config = get_config()
+        self.use_memoization = bool(self.config.get_from_general("use_memoization"))
         self.tree = dict()
         self.history_node = None
         self.action_node = None
@@ -47,7 +48,7 @@ class IPOMCP:
         self.discount_factor = float(self.config.get_from_env("discount_factor"))
         self.softmax_temperature = float(self.config.softmax_temperature)
         self.name = "IPOMCP"
-        self.x_ipomdp_model = False
+        self.aleph_ipomdp_model = False
 
     @staticmethod
     def compute_number_of_planning_iterations(number_of_iterations, nested_model):
@@ -127,12 +128,13 @@ class IPOMCP:
         else:
             optimal_tree_table = None
         # update buffer with new information
-        self.memoization_table.update_table(self.history_node.children_qvalues,
-                                            np.array([offer.value, counter_offer.value]),
-                                            query_parameters['belief'],
-                                            game_parameters={'trial': query_parameters['trial'],
-                                                             'seed': self.planning_parameters['seed'],
-                                                             'threshold': query_parameters['threshold']})
+        if self.use_memoization:
+            self.memoization_table.update_table(self.history_node.children_qvalues,
+                                                np.array([offer.value, counter_offer.value]),
+                                                query_parameters['belief'],
+                                                game_parameters={'trial': query_parameters['trial'],
+                                                                 'seed': self.planning_parameters['seed'],
+                                                                 'threshold': query_parameters['threshold']})
         return self.history_node.children, optimal_tree_table, \
                np.c_[self.history_node.children_qvalues, self.history_node.children_visited[:, 1]]
 
